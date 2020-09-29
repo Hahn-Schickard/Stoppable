@@ -1,0 +1,11 @@
+## [0.1.0] - 2020.09.29
+### Added 
+ - Stoppable
+ - StoppableTask 
+ - unit tests
+ - conan packaging
+ - conan package integration test
+ - documentation
+ - LICENSE and NOTICE files
+ - Contributing guide 
+ - Authors
