@@ -1,3 +1,6 @@
+[![pipeline status](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/cpp-projects/stoppable/badges/master/pipeline.svg)](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/cpp-projects/stoppable/-/commits/master)
+[![coverage report](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/cpp-projects/stoppable/badges/master/coverage.svg)](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/cpp-projects/stoppable/-/commits/master)
+
 <img src="docs/code_documentation/vendor-logo.png" alt="" width="200"/>
 
 # Variant Visitor for C++17
