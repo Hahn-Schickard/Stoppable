@@ -19,14 +19,7 @@ protected:
   void SetUp() override {
     task = new StoppableTask(make_unique<StoppableFake>(), "Task");
   }
-  void TearDown() override {
-    try {
-      task->stopTask();
-    } catch (StoppableTaskIsNotRunning &ex) {
-      // do nothing
-    }
-    delete task;
-  }
+  void TearDown() override { delete task; }
 
   StoppableTask *task;
 };
@@ -43,13 +36,13 @@ TEST_F(StoppableTaskTests, canStopTask) {
   EXPECT_NO_THROW(task->stopTask());
 }
 
-TEST_F(StoppableTaskTests, throwsStoppableTaskIsAlreadyRunning) {
+TEST_F(StoppableTaskTests, returnsFalseWhenTaskIsRunning) {
   EXPECT_NO_THROW(task->startTask());
-  EXPECT_THROW(task->startTask(), StoppableTaskIsAlreadyRunning);
+  EXPECT_FALSE(task->startTask());
 }
 
-TEST_F(StoppableTaskTests, throwsStoppableTaskIsNotRunning) {
+TEST_F(StoppableTaskTests, returnsFalseWhenTaskIsStopped) {
   EXPECT_NO_THROW(task->startTask());
   EXPECT_NO_THROW(task->stopTask());
-  EXPECT_THROW(task->stopTask(), StoppableTaskIsNotRunning);
+  EXPECT_FALSE(task->stopTask());
 }
