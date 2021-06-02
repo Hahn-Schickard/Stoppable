@@ -1,3 +1,4 @@
 /usr/*
 *.conan/*
 */Example/*
+*/unit_tests/* 
