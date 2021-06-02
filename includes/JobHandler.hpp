@@ -9,11 +9,13 @@
 #include <mutex>
 
 struct JobHandler : public Stoppable {
-  using ExceptionHandler = std::function<void(const std::exception &)>;
+  using ExceptionHandler = std::function<void(std::exception_ptr)>;
 
   JobHandler(ExceptionHandler handler,
              std::chrono::microseconds timeout = std::chrono::microseconds(10))
       : Stoppable(), handler_(handler), clear_timeout_(timeout) {}
+
+  ~JobHandler() { stop(); }
 
   void add(std::future<void> &&job) {
     std::lock_guard expansion_lock(
@@ -25,7 +27,7 @@ struct JobHandler : public Stoppable {
   void emplace(Job &&job, Args &&... args) {
     std::lock_guard expansion_lock(
         jobs_mutex_); // lock it so cleaner does not un erase something
-    jobs_.emplace_back(std::forward<Job>(job), std::forward < Args(args)...);
+    jobs_.emplace_back(std::forward<Job>(job), std::forward<Args>(args)...);
   }
 
 private:
@@ -39,7 +41,7 @@ private:
         try {
           it->get(); // cleanup the allocated memory
         } catch (std::exception &ex) {
-          handler_(std::move(ex));
+          handler_(std::current_exception());
         }
         jobs_.erase(it);
       }
@@ -53,7 +55,7 @@ private:
                    // add cancelation flag to EventListener's handleEvent
                    // method as well
       } catch (std::exception &ex) {
-        handler_(std::move(ex));
+        handler_(std::current_exception());
       }
       jobs_.erase(it);
     }
@@ -76,5 +78,7 @@ private:
   std::deque<std::future<void>> jobs_;
   std::mutex jobs_mutex_;
 };
+
+using JobHandlerPtr = std::shared_ptr<JobHandler>;
 
 #endif //__MULTITHREADING_JOBS_HANDLER_HPP
