@@ -12,13 +12,9 @@
 
 using namespace std;
 
-void handleException(exception_ptr thrown) {
-  try {
-    if (thrown) {
-      rethrow_exception(thrown);
-    }
-  } catch (const exception &e) {
-    cerr << "Caught exception: " << e.what() << endl;
+void rethrowException(exception_ptr thrown) {
+  if (thrown) {
+    rethrow_exception(thrown);
   }
 }
 
@@ -26,23 +22,87 @@ template <typename EXCEPTION_TYPE> void expectException(exception_ptr thrown) {
   EXPECT_THROW(rethrow_exception(thrown), EXCEPTION_TYPE);
 }
 
+struct FakeException : runtime_error {
+  FakeException() : runtime_error("Fake Exception") {}
+};
+
 struct FakeJob {
   FakeJob() = default;
 
   FakeJob(chrono::milliseconds delay) : delay_(delay) {}
 
-  void operator()() { this_thread::sleep_for(delay_); }
+  void operator()(shared_ptr<bool> completed) {
+    this_thread::sleep_for(delay_);
+    *completed = true;
+  }
+
+  void operator()() {
+    this_thread::sleep_for(delay_);
+    throw FakeException();
+  }
 
 private:
   chrono::milliseconds delay_ = chrono::milliseconds(0);
 };
 
-TEST(JobHandlerTests, tmp) {
-  auto exception_handler = std::bind(&handleException, placeholders::_1);
-  auto job_handler = make_unique<JobHandler>(move(exception_handler));
+TEST(JobHandlerTests, canAddAndClearJob) {
+  try {
+    auto exception_handler = std::bind(&rethrowException, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
 
-  auto job_handled_future =
-      async(launch::async, FakeJob(chrono::milliseconds(10)));
-  job_handler->add(move(job_handled_future));
-  this_thread::sleep_for(chrono::milliseconds(20));
+    job_handler_task->startTask();
+
+    auto job_completed = make_shared<bool>(false);
+
+    auto job_handled_future =
+        async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed);
+    job_handler->add(move(job_handled_future));
+    this_thread::sleep_for(chrono::milliseconds(20));
+
+    EXPECT_TRUE(*job_completed);
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
+}
+
+TEST(JobHandlerTests, canEmplaceAndClearJob) {
+  try {
+    auto exception_handler = std::bind(&rethrowException, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
+
+    job_handler_task->startTask();
+
+    auto job_completed = make_shared<bool>(false);
+
+    job_handler->emplace(
+        async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed));
+    this_thread::sleep_for(chrono::milliseconds(20));
+
+    EXPECT_TRUE(*job_completed);
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
+}
+
+TEST(JobHandlerTests, canHandleException) {
+  try {
+    auto exception_handler =
+        std::bind(&expectException<FakeException>, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
+
+    job_handler_task->startTask();
+
+    auto job_handled_future =
+        async(launch::async, FakeJob(chrono::milliseconds(10)));
+    job_handler->add(move(job_handled_future));
+    this_thread::sleep_for(chrono::milliseconds(20));
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
 }
