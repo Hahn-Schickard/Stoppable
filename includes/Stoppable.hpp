@@ -5,13 +5,19 @@
 #include <future>
 #include <memory>
 
+/**
+ * @brief Defines a Stoppable routine
+ *
+ */
 class Stoppable {
   std::promise<void> exitSignal_;
   std::future<void> exitFuture_;
 
 protected:
   /**
-   * @brief Implement in a do-while cycle
+   * @brief Implements a routine that can be stopped
+   *
+   * Implement in a do-while cycle
    * @code
    * do{
    *  // runner task
@@ -23,9 +29,11 @@ protected:
 
 public:
   Stoppable() : exitFuture_(exitSignal_.get_future()) {}
+
   Stoppable(Stoppable &&instance)
       : exitSignal_(std::move(instance.exitSignal_)),
         exitFuture_(std::move(instance.exitFuture_)) {}
+
   Stoppable &operator=(Stoppable &&instance) {
     exitFuture_ = std::move(instance.exitFuture_);
     exitSignal_ = std::move(instance.exitSignal_);
@@ -35,7 +43,7 @@ public:
   virtual ~Stoppable() = default;
 
   /**
-   * @brief Starts a given task
+   * @brief Starts to run a given routine
    *
    */
   void start() { run(); }
@@ -54,8 +62,8 @@ public:
   }
 
   /**
-   * @brief Sets the exit signal, so the next iteration of the task will not be
-   * executed
+   * @brief Sets the exit signal, so the next iteration of the run routine will
+   * not be executed
    *
    */
   void stop() { exitSignal_.set_value(); }

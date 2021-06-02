@@ -4,20 +4,13 @@
 #include "Stoppable.hpp"
 
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <thread>
 
-struct StoppableTaskIsAlreadyRunning : public std::runtime_error {
-  StoppableTaskIsAlreadyRunning(std::string const &message)
-      : std::runtime_error(message) {}
-};
-
-struct StoppableTaskIsNotRunning : public std::runtime_error {
-  StoppableTaskIsNotRunning(std::string const &message)
-      : std::runtime_error(message) {}
-};
-
+/**
+ * @brief Defines a Stoppable task which is run in a separate thread
+ *
+ */
 class StoppableTask {
   std::unique_ptr<Stoppable> task_;
   std::string task_name_;
@@ -30,8 +23,8 @@ public:
    */
   StoppableTask() : StoppableTask(std::unique_ptr<Stoppable>(), "") {}
   /**
-   * @brief Construct a new Stoppable Task object with a given Stoppable thread
-   * and thread name
+   * @brief Construct a new Stoppable Task object with a given Stoppable routine
+   * and task name
    *
    * @param task
    * @param task_name
@@ -40,17 +33,19 @@ public:
       : task_(std::move(task)), task_name_(task_name),
         task_thread_(std::make_unique<std::thread>()) {}
 
+  ~StoppableTask() { stopTask(); }
+
   /**
    * @brief Starts the task, throws StoppableTaskIsAlreadyRunning if the task is
    * already running
    *
    */
-  void startTask() {
-    if (!task_thread_->joinable())
+  bool startTask() {
+    if (!task_thread_->joinable()) {
       task_thread_ = std::make_unique<std::thread>([&]() { task_->start(); });
-    else {
-      std::string error_msg = "Task" + task_name_ + " is already running";
-      throw StoppableTaskIsAlreadyRunning(std::move(error_msg));
+      return task_thread_->joinable();
+    } else {
+      return false;
     }
   }
 
@@ -59,13 +54,13 @@ public:
    * already stopped
    *
    */
-  void stopTask() {
+  bool stopTask() {
     if (task_thread_->joinable()) {
       task_->stop();
       task_thread_->join();
+      return !task_thread_->joinable();
     } else {
-      std::string error_msg = "Task" + task_name_ + " is not running";
-      throw StoppableTaskIsNotRunning(std::move(error_msg));
+      return false;
     }
   }
 
