@@ -15,7 +15,7 @@ class StoppableImplementation : public Stoppable {
 };
 
 int main() {
-  auto task = make_unique<StoppableTask>(make_unique<StoppableImplementation>(),
+  auto task = make_unique<StoppableTask>(make_shared<StoppableImplementation>(),
                                          "Runner");
 
   cout << "Starting " << task->getName() << endl;

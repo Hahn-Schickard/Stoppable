@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <future>
+#include <memory>
 
 /**
  * @brief Defines a Stoppable routine
@@ -67,5 +68,7 @@ public:
    */
   void stop() { exitSignal_.set_value(); }
 };
+
+using StoppablePtr = std::shared_ptr<Stoppable>;
 
 #endif //__MULTITHREADING_STOPABLE_HPP

@@ -1,3 +1,15 @@
+## [0.2.0] - 2021.06.02
+### Added 
+ - JobHandler 
+ - JobHandlerTests
+ - StoppablePtr alias
+ - StoppableTask destructor to stop the task before destruction is finished
+
+### Changed
+ - StoppableTask to use StoppablePtr instead of unique_ptr<Stoppable>
+ - StoppableTask::startTask to return bool instead of throwing an exception
+ - StoppableTask::stopTask to return bool instead of throwing an exception
+
 ## [0.1.0] - 2020.09.29
 ### Added 
  - Stoppable

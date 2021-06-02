@@ -1,9 +1,13 @@
-# Introduction
-## C++17 Lightweight Machine to Machine (LwM2M) Server Implementation
-### Brief description
+# Stoppable
+## Brief description
 
-This is a module for C++17 based LwM2M Server implementation. It uses [ASIO](https://think-async.com/Asio/) to manage the network communications, [HaSLL](https://git.hahn-schickard.de/software-sollutions/application-engineering/internal/hasll) as the main logging interface, [PugiXML](https://pugixml.org/) as the XML parser library and provides all of the required dependency managment throught [Conan Dependency Mangment System](https://conan.io/). 
+A header only implementation of a utility classes that help develop multi-threaded code, requires std::thread library and C++11 support.
 
-### Required dependencies
+### Contains:
+ * `Stoppable` - A class that provides functionality to start and stop a given routine 
+ * `StoppableTask` - A class that manages `Stoppable` in a separate thread
+ * `JobHandler` - A class that cleans up allocated `std::future` instances from `std::async` calls. 
+
+## Required dependencies
 * [Python 3.7](https://www.python.org/downloads/release/python-370/)
 * [conan](https://docs.conan.io/en/latest/installation.html)
