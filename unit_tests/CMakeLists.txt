@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.6)
 
 set(THIS Unit_Tests_Runner)
 
-file(GLOB StoppableTask_TestsSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTask_TestsSuite/*")
+file(GLOB StoppableTestsSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
 
 find_package(GTest REQUIRED)
 
 add_executable(${THIS})
 target_sources(${THIS} PRIVATE 
                        "testRunner.cpp"
-                       ${StoppableTask_TestsSuite}
+                       ${StoppableTestsSuite}
 )
 
 target_link_libraries(${THIS} PUBLIC
