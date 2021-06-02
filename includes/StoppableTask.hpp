@@ -12,7 +12,7 @@
  *
  */
 class StoppableTask {
-  std::unique_ptr<Stoppable> task_;
+  StoppablePtr task_;
   std::string task_name_;
   std::unique_ptr<std::thread> task_thread_;
 
@@ -21,7 +21,7 @@ public:
    * @brief Construct a new empty Stoppable Task object
    *
    */
-  StoppableTask() : StoppableTask(std::unique_ptr<Stoppable>(), "") {}
+  StoppableTask() : StoppableTask(StoppablePtr(), "") {}
   /**
    * @brief Construct a new Stoppable Task object with a given Stoppable routine
    * and task name
@@ -29,7 +29,7 @@ public:
    * @param task
    * @param task_name
    */
-  StoppableTask(std::unique_ptr<Stoppable> task, std::string task_name)
+  StoppableTask(StoppablePtr task, std::string task_name)
       : task_(std::move(task)), task_name_(task_name),
         task_thread_(std::make_unique<std::thread>()) {}
 
@@ -42,7 +42,8 @@ public:
    */
   bool startTask() {
     if (!task_thread_->joinable()) {
-      task_thread_ = std::make_unique<std::thread>([&]() { task_->start(); });
+      task_thread_ = std::make_unique<std::thread>(
+          [](StoppablePtr task) { task->start(); }, task_);
       return task_thread_->joinable();
     } else {
       return false;
