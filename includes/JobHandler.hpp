@@ -15,8 +15,6 @@ struct JobHandler : public Stoppable {
              std::chrono::microseconds timeout = std::chrono::microseconds(10))
       : Stoppable(), handler_(handler), clear_timeout_(timeout) {}
 
-  ~JobHandler() { stop(); }
-
   void add(std::future<void> &&job) {
     std::lock_guard expansion_lock(
         jobs_mutex_); // lock it so cleaner does not un erase something
