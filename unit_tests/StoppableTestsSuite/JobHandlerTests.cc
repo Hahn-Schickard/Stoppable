@@ -88,6 +88,47 @@ TEST(JobHandlerTests, canEmplaceAndClearJob) {
   }
 }
 
+TEST(JobHandlerTests, canCleanOnStop) {
+  try {
+    auto exception_handler = std::bind(&rethrowException, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
+
+    job_handler_task->startTask();
+
+    auto job_completed = make_shared<bool>(false);
+
+    auto job_handled_future =
+        async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed);
+    job_handler->add(move(job_handled_future));
+    job_handler_task->stopTask();
+
+    EXPECT_TRUE(*job_completed);
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
+}
+
+TEST(JobHandlerTests, canCleanExceptionOnStop) {
+  try {
+    auto exception_handler =
+        std::bind(&expectException<FakeException>, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
+
+    job_handler_task->startTask();
+
+    auto job_handled_future =
+        async(launch::async, FakeJob(chrono::milliseconds(10)));
+    job_handler->add(move(job_handled_future));
+    job_handler_task->stopTask();
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
+}
+
 TEST(JobHandlerTests, canHandleException) {
   try {
     auto exception_handler =
