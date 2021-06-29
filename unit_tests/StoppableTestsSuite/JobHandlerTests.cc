@@ -147,3 +147,29 @@ TEST(JobHandlerTests, canHandleException) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
+
+TEST(JobHandlerTests, canHandleExceptionAndStartNewJob) {
+  try {
+    auto exception_handler =
+        std::bind(&expectException<FakeException>, placeholders::_1);
+    auto job_handler = make_shared<JobHandler>(move(exception_handler));
+    auto job_handler_task =
+        make_unique<StoppableTask>(job_handler, "Job Handler");
+
+    job_handler_task->startTask();
+
+    auto throws_exception =
+        async(launch::async, FakeJob(chrono::milliseconds(10)));
+    job_handler->add(move(throws_exception));
+    auto job_completed = make_shared<bool>(false);
+    auto completes_job =
+        async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed);
+    job_handler->add(move(completes_job));
+
+    this_thread::sleep_for(chrono::milliseconds(20));
+
+    EXPECT_TRUE(*job_completed);
+  } catch (exception &ex) {
+    FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
+  }
+}
