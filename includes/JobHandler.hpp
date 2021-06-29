@@ -4,8 +4,8 @@
 #include "Stoppable.hpp"
 
 #include <chrono>
-#include <deque>
 #include <future>
+#include <list>
 #include <mutex>
 
 struct JobHandler : public Stoppable {
@@ -30,32 +30,33 @@ struct JobHandler : public Stoppable {
 
 private:
   void tryClean() {
-    for (auto it = jobs_.begin(); it < jobs_.end(); it++) {
-      auto status = it->wait_for(clear_timeout_);
+    jobs_.remove_if([&](auto &it) {
+      auto status = it.wait_for(clear_timeout_);
       if (status == std::future_status::ready) {
         std::lock_guard deletion_lock(
             jobs_mutex_); // lock it so notify, does not expand vector size,
         // moving the end iterator position
         try {
-          it->get(); // cleanup the allocated memory
+          it.get(); // cleanup the allocated memory
         } catch (std::exception &ex) {
           handler_(std::current_exception());
         }
-        jobs_.erase(it);
+        return true;
+      } else {
+        return false;
       }
-    }
+    });
   }
 
   void clean() {
-    for (auto it = jobs_.begin(); it < jobs_.end(); it++) {
+    std::lock_guard deletion_lock(jobs_mutex_);
+    for (auto it = jobs_.begin(); it != jobs_.end();) {
       try {
-        it->get(); // this will block until job is completed, might need to
-                   // add cancelation flag to EventListener's handleEvent
-                   // method as well
+        it->get();
       } catch (std::exception &ex) {
         handler_(std::current_exception());
       }
-      jobs_.erase(it);
+      it = jobs_.erase(it);
     }
   }
 
@@ -73,7 +74,7 @@ private:
 
   ExceptionHandler handler_;
   std::chrono::microseconds clear_timeout_;
-  std::deque<std::future<void>> jobs_;
+  std::list<std::future<void>> jobs_;
   std::mutex jobs_mutex_;
 };
 
