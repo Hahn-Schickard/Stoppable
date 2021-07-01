@@ -38,7 +38,7 @@ private:
         // moving the end iterator position
         try {
           it.get(); // cleanup the allocated memory
-        } catch (std::exception &ex) {
+        } catch (...) {
           handler_(std::current_exception());
         }
         return true;
@@ -53,7 +53,7 @@ private:
     for (auto it = jobs_.begin(); it != jobs_.end();) {
       try {
         it->get();
-      } catch (std::exception &ex) {
+      } catch (...) {
         handler_(std::current_exception());
       }
       it = jobs_.erase(it);
