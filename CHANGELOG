@@ -1,3 +1,7 @@
+## [0.2.2] - 2021.07.01
+### Fixed
+ - install include directory location
+
 ## [0.2.1] - 2021.07.01
 ### Changed
  - JobHandler std::exception to ellipsis operator to handle anything that can be thrown
