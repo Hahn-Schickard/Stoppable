@@ -12,14 +12,14 @@
 
 using namespace std;
 
-void rethrowException(exception_ptr thrown) {
+void rethrowException(const exception_ptr &thrown) {
   if (thrown) {
     rethrow_exception(thrown);
   }
 }
 
 template <typename EXCEPTION_TYPE> void expectException(exception_ptr thrown) {
-  EXPECT_THROW(rethrow_exception(thrown), EXCEPTION_TYPE);
+  EXPECT_THROW(rethrow_exception(move(thrown)), EXCEPTION_TYPE);
 }
 
 struct FakeException : runtime_error {
@@ -31,7 +31,7 @@ struct FakeJob {
 
   FakeJob(chrono::milliseconds delay) : delay_(delay) {}
 
-  void operator()(shared_ptr<bool> completed) {
+  void operator()(const shared_ptr<bool> &completed) {
     this_thread::sleep_for(delay_);
     *completed = true;
   }
@@ -45,6 +45,7 @@ private:
   chrono::milliseconds delay_ = chrono::milliseconds(0);
 };
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canAddAndClearJob) {
   try {
     auto exception_handler = std::bind(&rethrowException, placeholders::_1);
@@ -67,6 +68,7 @@ TEST(JobHandlerTests, canAddAndClearJob) {
   }
 }
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canEmplaceAndClearJob) {
   try {
     auto exception_handler = std::bind(&rethrowException, placeholders::_1);
@@ -88,6 +90,7 @@ TEST(JobHandlerTests, canEmplaceAndClearJob) {
   }
 }
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canCleanOnStop) {
   try {
     auto exception_handler = std::bind(&rethrowException, placeholders::_1);
@@ -110,6 +113,7 @@ TEST(JobHandlerTests, canCleanOnStop) {
   }
 }
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canCleanExceptionOnStop) {
   try {
     auto exception_handler =
@@ -129,6 +133,7 @@ TEST(JobHandlerTests, canCleanExceptionOnStop) {
   }
 }
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canHandleException) {
   try {
     auto exception_handler =
@@ -148,6 +153,7 @@ TEST(JobHandlerTests, canHandleException) {
   }
 }
 
+// NOLINTNEXTLINE
 TEST(JobHandlerTests, canHandleExceptionAndStartNewJob) {
   try {
     auto exception_handler =

@@ -17,32 +17,39 @@ class StoppableFake : public Stoppable {
 class StoppableTaskTests : public ::testing::Test {
 protected:
   void SetUp() override {
-    task = new StoppableTask(make_unique<StoppableFake>(), "Task");
+    task_ = new StoppableTask(make_unique<StoppableFake>(), "Task");
   }
-  void TearDown() override { delete task; }
+  void TearDown() override { delete task_; }
 
-  StoppableTask *task;
+  StoppableTask *task_;
 };
 
+// NOLINTNEXTLINE
 TEST_F(StoppableTaskTests, canReturnTaskName) {
   string expected = "Task";
-  EXPECT_EQ(task->getName(), expected);
+  EXPECT_EQ(task_->getName(), expected);
 }
 
-TEST_F(StoppableTaskTests, canStartTask) { EXPECT_NO_THROW(task->startTask()); }
+// NOLINTNEXTLINE
+TEST_F(StoppableTaskTests, canStartTask) {
+  EXPECT_NO_THROW(task_->startTask());
+}
 
+// NOLINTNEXTLINE
 TEST_F(StoppableTaskTests, canStopTask) {
-  EXPECT_NO_THROW(task->startTask());
-  EXPECT_NO_THROW(task->stopTask());
+  EXPECT_NO_THROW(task_->startTask());
+  EXPECT_NO_THROW(task_->stopTask());
 }
 
+// NOLINTNEXTLINE
 TEST_F(StoppableTaskTests, returnsFalseWhenTaskIsRunning) {
-  EXPECT_NO_THROW(task->startTask());
-  EXPECT_FALSE(task->startTask());
+  EXPECT_NO_THROW(task_->startTask());
+  EXPECT_FALSE(task_->startTask());
 }
 
+// NOLINTNEXTLINE
 TEST_F(StoppableTaskTests, returnsFalseWhenTaskIsStopped) {
-  EXPECT_NO_THROW(task->startTask());
-  EXPECT_NO_THROW(task->stopTask());
-  EXPECT_FALSE(task->stopTask());
+  EXPECT_NO_THROW(task_->startTask());
+  EXPECT_NO_THROW(task_->stopTask());
+  EXPECT_FALSE(task_->stopTask());
 }
