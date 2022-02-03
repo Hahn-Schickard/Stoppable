@@ -1,3 +1,18 @@
+## [0.2.3] - 2022.02.03
+### Fixed 
+ - missing <thread> include in JobHander.hpp
+
+### Added
+ - find_package(Threads) to library CMakeLists.txt
+ - NOLINT markers for GTest macros
+ - JobHandler to conan integration test 
+ 
+### Changed
+ - JobHandlerTests.cc rethrowException() to use const & instead of value
+ - JobHandlerTests.cc FakeException::()(const shared_ptr<bool> &completed) to use const & instead of value
+ - StoppableTaskTests.cc to be compliant with readability rules in clang-tidy
+ - conan integration test to better test StoppableTask 
+
 ## [0.2.2] - 2021.07.01
 ### Fixed
  - install include directory location
