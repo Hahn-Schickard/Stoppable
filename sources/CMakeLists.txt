@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 set(THIS Stoppable_Task)
 
+find_package(Threads REQUIRED)
+
 list(APPEND THIS_INCLUDES_DIRS
             ${INCLUDES_DIR}/
 )
@@ -10,8 +12,11 @@ file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 
 INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
 
-
 add_library(${THIS} INTERFACE)        
+
+target_link_libraries(${THIS} INTERFACE 
+                              Threads::Threads
+)
 
 target_include_directories(${THIS} INTERFACE
                            $<BUILD_INTERFACE:${INCLUDES_DIR}>
