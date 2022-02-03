@@ -13,14 +13,21 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(DOCS_DIR "${PROJECT_SOURCE_DIR}/docs/code_documentation")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(VERBOSE_FILE_INCLUSION ON)
+set(STATIC_CODE_ANALYSIS ON)
 
-find_package(Threads)
+option(USE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
 
 include(GNUInstallDirs)
 include(macros)
-include(conan_install)
+include(linter)
 include(compiler_settings)
-execute_conan_install()
+
+if(USE_CONAN)
+        include(conan_install)
+        execute_conan_install()
+endif()
+
+FIND_INSTALLED_DEPENDENCIES("${DEPENDENCIES_LIST}")
 
 add_subdirectory(sources)
 add_subdirectory(unit_tests)
