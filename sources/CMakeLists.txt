@@ -13,15 +13,13 @@ INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
 
 add_library(${THIS} INTERFACE)        
 
-target_link_libraries(${THIS} INTERFACE 
-                              Threads::Threads
-)
-
 target_include_directories(${THIS} INTERFACE
                            $<BUILD_INTERFACE:${INCLUDES_DIR}>
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 )
+
+target_compile_features(${THIS} INTERFACE cxx_std_17)
 
 install(
     TARGETS ${THIS}
