@@ -7,6 +7,7 @@
 #include <future>
 #include <list>
 #include <mutex>
+#include <thread>
 
 struct JobHandler : public Stoppable {
   using ExceptionHandler = std::function<void(std::exception_ptr)>;
