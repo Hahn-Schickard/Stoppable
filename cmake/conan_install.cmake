@@ -25,10 +25,45 @@ macro(execute_conan_install)
     if("${CONANFILE}" STREQUAL "")
       find_file(LOCAL_CONANFILE conanfile.txt PATHS ${PROJECT_SOURCE_DIR} NO_DEFAULT_PATH)
       if(NOT EXISTS "${LOCAL_CONANFILE}") 
-        message(FATAL_ERROR "No conanafile found in local project directory: ${PROJECT_SOURCE_DIR}")
+        message(WARNING "No conanafile found in local project directory: ${PROJECT_SOURCE_DIR}")
       else()
         message(STATUS "Using local conanfile: ${LOCAL_CONANFILE}")
         set(CONANFILE ${LOCAL_CONANFILE})
+        
+        execute_process(COMMAND ${conan_command} install ${CONANFILE}
+                    RESULT_VARIABLE return_code
+                    OUTPUT_VARIABLE conan_output
+                    ERROR_VARIABLE conan_error
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        )
+
+        if(NOT SILENT)
+          message("${conan_output}")
+        endif()
+
+        if(NOT "${return_code}" STREQUAL "0")
+          message(WARNING "Conan failed to install failed!")
+          message("${conan_error}")
+          message(WARNING "Trying to build sources locally!")
+          execute_process(COMMAND ${conan_command} install ${CONANFILE} --build=missing
+                          RESULT_VARIABLE return_code
+                          OUTPUT_VARIABLE conan_output
+                          ERROR_VARIABLE conan_error
+                          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+          )
+
+          if(NOT SILENT)
+            message("${conan_output}")
+          endif()
+
+          if(NOT "${return_code}" STREQUAL "0")
+            message(FATAL_ERROR "${conan_error}")
+          endif()
+        endif()
+
+        message(STATUS "Using generated conan paths from: ${CMAKE_BINARY_DIR}/conan_paths.cmake")
+        include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+
       endif()
     else()
       if(NOT EXISTS "${CONANFILE}") 
@@ -36,38 +71,4 @@ macro(execute_conan_install)
       endif()
     endif()
 
-    execute_process(COMMAND ${conan_command} install ${CONANFILE}
-                    RESULT_VARIABLE return_code
-                    OUTPUT_VARIABLE conan_output
-                    ERROR_VARIABLE conan_error
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
-
-    if(NOT SILENT)
-      message("${conan_output}")
-    endif()
-    
-    if(NOT "${return_code}" STREQUAL "0")
-      message(WARNING "Conan failed to install failed!")
-      message("${conan_error}")
-      message(WARNING "Trying to build sources locally!")
-      execute_process(COMMAND ${conan_command} install ${CONANFILE} --build
-                      RESULT_VARIABLE return_code
-                      OUTPUT_VARIABLE conan_output
-                      ERROR_VARIABLE conan_error
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      )
-
-      if(NOT SILENT)
-        message("${conan_output}")
-      endif()
-
-      if(NOT "${return_code}" STREQUAL "0")
-        message(FATAL_ERROR "${conan_error}")
-      endif()
-    endif()
-    message(STATUS "Using generated conan paths from: ${CMAKE_BINARY_DIR}/conan_paths.cmake")
-    include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-
-    
 endmacro(execute_conan_install)
