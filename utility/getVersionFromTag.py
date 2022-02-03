@@ -1,36 +1,29 @@
-import subprocess
+#!/usr/bin/env python
+"""This utility returns a version string from a git tag
+
+"""
+
 import sys
 import re
-
-
-def is_installed(name: str):
-    try:
-        subprocess.run(
-            [name, "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        print("Program: ", name, " is not installed!")
-        return False
-    return True
+from utilities import run_process
 
 
 def getVersionFromTag(exact_match=True):
-    if is_installed("git"):
-        git_cmd = ["git", "describe", "--abbrev=0"]
-        if exact_match:
-            git_cmd.append("--exact-match")
-        output = subprocess.run(
-            git_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        tag = output.stdout.decode('utf-8').strip("\n")
-        if output.returncode != 0:
-            raise subprocess.CalledProcessError(
-                output.returncode, git_cmd, stderr=output.stderr.decode('utf-8'))
-        return re.sub('([A-Z]*?[^0-9.])', '', tag)
-    else:
-        raise OSError("File not found")
+    args = ['describe', '--abbrev=0', '--all']
+    if exact_match:
+        args.append('--exact-match')
+    process = run_process('git', args)
+    tag = process.stdout
+    return re.sub('([A-Z]*?[^0-9.])', '', tag)
 
 
 if __name__ == "__main__":
     try:
         print(getVersionFromTag(False))
-    except Exception:
+    except OSError as error:
+        print('Return Code: {}\nError message: {}'.format(
+            error.errno, error.strerror.rstrip()))
+        sys.exit(error.errno)
+    except RuntimeError as error:
+        print(error.args)
         sys.exit(1)
