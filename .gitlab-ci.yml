@@ -1,11 +1,5 @@
 include: "ci-variables.yml"
 
-cache: &global
-  key: ${CI_PROJECT_ID}_global_cache
-  paths:
-    - ${CI_PROJECT_DIR}/.conan
-  policy: pull
-
 stages:
   - build
   - test
@@ -22,7 +16,7 @@ stages:
     - conan config set storage.path="${CI_PROJECT_DIR}/.conan/data"
     - conan config get storage.download_cache
 
-build:
+.build:
   extends: .setup
   stage: build
   tags:
@@ -34,17 +28,63 @@ build:
     - cd build
     - cmake ${CMAKE_VARIABLES} ..
     - cmake --build . --target all --config Debug --
-  cache:
-    <<: *global
-    policy: pull-push
   artifacts:
     paths:
       - build/
 
-run_tests:
+build:debian-buster:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster:2.0.0
+  cache: 
+    key: ${CI_PROJECT_ID}_buster_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+build:debian-bullseye:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye:2.0.0
+  cache: 
+    key: ${CI_PROJECT_ID}_bullseye_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+build:ubuntu-18.04:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:2.0.0
+  cache: 
+    key: ${CI_PROJECT_ID}_ubuntu18_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+build:ubuntu-20.04:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:2.0.0
+  cache: 
+    key: ${CI_PROJECT_ID}_ubuntu20_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+build:fedora-32:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:2.0.0
+  cache: 
+    key: ${CI_PROJECT_ID}_fedora32_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+build:fedora-34:
+  extends: .build
+  image: 
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:2.0.0
+    entrypoint: ["/bin/sh", "-c"]
+  cache: 
+    key: ${CI_PROJECT_ID}_fedora34_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+.run_tests:
   extends: .setup
   stage: test
-  needs: ["build"]
   tags:
     - conan
   script:
@@ -56,10 +96,65 @@ run_tests:
     paths:
       - build/
 
-analyze_memory_usage:
+run_tests:debian-buster:
+  extends: .run_tests
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster:2.0.0
+  needs: ["build:debian-buster"]
+  cache: 
+    key: ${CI_PROJECT_ID}_buster_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+run_tests:debian-bullseye:
+  extends: .run_tests
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye:2.0.0
+  needs: ["build:debian-bullseye"]
+  cache: 
+    key: ${CI_PROJECT_ID}_bullseye_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+run_tests:ubuntu-18.04:
+  extends: .run_tests
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:2.0.0
+  needs: ["build:ubuntu-18.04"]
+  cache: 
+    key: ${CI_PROJECT_ID}_ubuntu18_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+run_tests:ubuntu-20.04:
+  extends: .run_tests
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:2.0.0
+  needs: ["build:ubuntu-20.04"]
+  cache: 
+    key: ${CI_PROJECT_ID}_ubuntu20_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+run_tests:fedora-32:
+  extends: .run_tests
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:2.0.0
+  needs: ["build:fedora-32"]
+  cache: 
+    key: ${CI_PROJECT_ID}_fedora32_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+run_tests:fedora-34:
+  extends: .run_tests
+  image: 
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:2.0.0
+    entrypoint: ["/bin/sh", "-c"]
+  needs: ["build:fedora-34"]
+  cache: 
+    key: ${CI_PROJECT_ID}_fedora34_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
+
+.analyze_memory_usage:
   extends: .setup
   stage: analyze
-  needs: ["build"]
   tags:
     - conan
   script:
@@ -68,23 +163,85 @@ analyze_memory_usage:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Debug_Valgrind_Results"
     paths:
       - valgrind-results.log
-  only:
-    variables:
-      - $RUN_VALGRIND == "true"
+  rules:
+    - if: '$RUN_VALGRIND == "true"'
   allow_failure: true
 
-check_code_coverage:
+analyze_memory_usage:debian-buster:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster:2.0.0
+  needs: ["build:debian-buster"]
+
+analyze_memory_usage:debian-bullseye:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye:2.0.0
+  needs: ["build:debian-bullseye"]
+
+analyze_memory_usage:ubuntu-18.04:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:2.0.0
+  needs: ["build:ubuntu-18.04"]
+
+analyze_memory_usage:ubuntu-20.04:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:2.0.0
+  needs: ["build:ubuntu-20.04"]
+
+analyze_memory_usage:fedora-32:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:2.0.0
+  needs: ["build:fedora-32"]
+
+analyze_memory_usage:fedora-34:
+  extends: .analyze_memory_usage
+  image: 
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:2.0.0
+    entrypoint: ["/bin/sh", "-c"]
+  needs: ["build:fedora-34"]
+
+.check_code_coverage:
   extends: .setup
   stage: analyze
-  needs: ["build", "run_tests"]
   tags:
     - conan
   script:
-    - python3 utility/checkCodeCoverage.py ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+    - python3 utility/checkCodeCoverage.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
     paths:
       - code_coverage_report/
+
+check_code_coverage:debian-buster:
+  extends: .check_code_coverage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster:2.0.0
+  needs: ["build:debian-buster", "run_tests:debian-buster"]
+
+check_code_coverage:debian-bullseye:
+  extends: .check_code_coverage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye:2.0.0
+  needs: ["build:debian-bullseye", "run_tests:debian-bullseye"]
+
+check_code_coverage:ubuntu-18.04:
+  extends: .check_code_coverage
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:2.0.0
+  needs: ["build:ubuntu-18.04", "run_tests:ubuntu-18.04"]
+
+check_code_coverage:ubuntu-20.04:
+  extends: .check_code_coverage
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:2.0.0
+  needs: ["build:ubuntu-20.04", "run_tests:ubuntu-20.04"]
+
+check_code_coverage:fedora-32:
+  extends: .check_code_coverage
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:2.0.0
+  needs: ["build:fedora-32", "run_tests:fedora-32"]
+
+check_code_coverage:fedora-34:
+  extends: .check_code_coverage
+  image: 
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:2.0.0
+    entrypoint: ["/bin/sh", "-c"]
+  needs: ["build:fedora-34", "run_tests:fedora-34"]
 
 generate_autodoc:
   stage: document
@@ -114,16 +271,20 @@ generate_autodoc:
 
 package:stable:
   extends: .package
+  cache: 
+    key: ${CI_PROJECT_ID}_buster_cache
+    paths:
+      - ${CI_PROJECT_DIR}/.conan
   script:
     - VERSION=$(python3 ./utility/getVersionFromTag.py)
     - conan create ./conan/ ${VERSION}@hahn-schickard/stable --build=missing
     - conan upload ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable -r upload_repo
-  only:
-    - /Release_v*/
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^Release_v/'
 
 pages:
   stage: deploy
-  needs: ["build", "run_tests", "check_code_coverage", "generate_autodoc"]
+  needs: ["build:debian-buster", "run_tests:debian-buster", "check_code_coverage:debian-buster", "generate_autodoc"]
   tags:
     - conan
   script:
@@ -132,5 +293,5 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - /Release_v*/
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^Release_v/'
