@@ -30,11 +30,11 @@ protected:
 public:
   Stoppable() : exitFuture_(exitSignal_.get_future()) {}
 
-  Stoppable(Stoppable &&instance)
+  Stoppable(Stoppable&& instance)
       : exitSignal_(std::move(instance.exitSignal_)),
         exitFuture_(std::move(instance.exitFuture_)) {}
 
-  Stoppable &operator=(Stoppable &&instance) {
+  Stoppable& operator=(Stoppable&& instance) {
     exitFuture_ = std::move(instance.exitFuture_);
     exitSignal_ = std::move(instance.exitSignal_);
     return *this;
@@ -56,9 +56,9 @@ public:
    */
   bool stopRequested() {
     return exitFuture_.wait_for(std::chrono::milliseconds(0)) ==
-                   std::future_status::timeout
-               ? false
-               : true;
+            std::future_status::timeout
+        ? false
+        : true;
   }
 
   /**

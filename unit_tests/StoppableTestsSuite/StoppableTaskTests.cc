@@ -21,7 +21,7 @@ protected:
   }
   void TearDown() override { delete task_; }
 
-  StoppableTask *task_;
+  StoppableTask* task_;
 };
 
 // NOLINTNEXTLINE

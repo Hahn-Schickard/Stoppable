@@ -13,17 +13,17 @@ struct JobHandler : public Stoppable {
   using ExceptionHandler = std::function<void(std::exception_ptr)>;
 
   JobHandler(ExceptionHandler handler,
-             std::chrono::microseconds timeout = std::chrono::microseconds(10))
+      std::chrono::microseconds timeout = std::chrono::microseconds(10))
       : Stoppable(), handler_(handler), clear_timeout_(timeout) {}
 
-  void add(std::future<void> &&job) {
+  void add(std::future<void>&& job) {
     std::lock_guard expansion_lock(
         jobs_mutex_); // lock it so cleaner does not un erase something
     jobs_.push_back(std::move(job));
   }
 
   template <typename Job, typename... Args>
-  void emplace(Job &&job, Args &&... args) {
+  void emplace(Job&& job, Args&&... args) {
     std::lock_guard expansion_lock(
         jobs_mutex_); // lock it so cleaner does not un erase something
     jobs_.emplace_back(std::forward<Job>(job), std::forward<Args>(args)...);
@@ -31,7 +31,7 @@ struct JobHandler : public Stoppable {
 
 private:
   void tryClean() {
-    jobs_.remove_if([&](auto &it) {
+    jobs_.remove_if([&](auto& it) {
       auto status = it.wait_for(clear_timeout_);
       if (status == std::future_status::ready) {
         std::lock_guard deletion_lock(

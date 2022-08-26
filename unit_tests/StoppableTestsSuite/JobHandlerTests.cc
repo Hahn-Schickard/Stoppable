@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void rethrowException(const exception_ptr &thrown) {
+void rethrowException(const exception_ptr& thrown) {
   if (thrown) {
     rethrow_exception(thrown);
   }
@@ -31,7 +31,7 @@ struct FakeJob {
 
   FakeJob(chrono::milliseconds delay) : delay_(delay) {}
 
-  void operator()(const shared_ptr<bool> &completed) {
+  void operator()(const shared_ptr<bool>& completed) {
     this_thread::sleep_for(delay_);
     *completed = true;
   }
@@ -63,7 +63,7 @@ TEST(JobHandlerTests, canAddAndClearJob) {
     this_thread::sleep_for(chrono::milliseconds(20));
 
     EXPECT_TRUE(*job_completed);
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
@@ -85,7 +85,7 @@ TEST(JobHandlerTests, canEmplaceAndClearJob) {
     this_thread::sleep_for(chrono::milliseconds(20));
 
     EXPECT_TRUE(*job_completed);
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
@@ -108,7 +108,7 @@ TEST(JobHandlerTests, canCleanOnStop) {
     job_handler_task->stopTask();
 
     EXPECT_TRUE(*job_completed);
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
@@ -128,7 +128,7 @@ TEST(JobHandlerTests, canCleanExceptionOnStop) {
         async(launch::async, FakeJob(chrono::milliseconds(10)));
     job_handler->add(move(job_handled_future));
     job_handler_task->stopTask();
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
@@ -148,7 +148,7 @@ TEST(JobHandlerTests, canHandleException) {
         async(launch::async, FakeJob(chrono::milliseconds(10)));
     job_handler->add(move(job_handled_future));
     this_thread::sleep_for(chrono::milliseconds(20));
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
@@ -175,7 +175,7 @@ TEST(JobHandlerTests, canHandleExceptionAndStartNewJob) {
     this_thread::sleep_for(chrono::milliseconds(20));
 
     EXPECT_TRUE(*job_completed);
-  } catch (exception &ex) {
+  } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
