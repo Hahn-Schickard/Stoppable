@@ -32,23 +32,23 @@ FIND_INSTALLED_DEPENDENCIES("${DEPENDENCIES_LIST}")
 add_subdirectory(sources)
 add_subdirectory(unit_tests)
 
-WRITE_PKG_CONFIG_IN_FILE(${PROJECT_NAME} "${TRANSITIVE_DEPENENCIES}")		
-        
-include(CMakePackageConfigHelpers)	
+WRITE_PKG_CONFIG_IN_FILE(${PROJECT_NAME} "${TRANSITIVE_DEPENENCIES}")
 
-configure_package_config_file(		
-  "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"		
-  "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"		
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in"
+  "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION ${THIS_PACKAGE_NAME}/
-)	
+)
 
-install(EXPORT ${PROJECT_NAME}Targets		
-        FILE ${PROJECT_NAME}Targets.cmake		
-        NAMESPACE ${PROJECT_NAME}::		
+install(EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
 
-install(FILES 
+install(FILES
         ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX}
 )

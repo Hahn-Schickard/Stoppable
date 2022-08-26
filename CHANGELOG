@@ -1,17 +1,17 @@
 ## [0.2.3] - 2022.02.03
-### Fixed 
+### Fixed
  - missing <thread> include in JobHander.hpp
 
 ### Added
  - find_package(Threads) to library CMakeLists.txt
  - NOLINT markers for GTest macros
- - JobHandler to conan integration test 
- 
+ - JobHandler to conan integration test
+
 ### Changed
  - JobHandlerTests.cc rethrowException() to use const & instead of value
  - JobHandlerTests.cc FakeException::()(const shared_ptr<bool> &completed) to use const & instead of value
  - StoppableTaskTests.cc to be compliant with readability rules in clang-tidy
- - conan integration test to better test StoppableTask 
+ - conan integration test to better test StoppableTask
 
 ## [0.2.2] - 2021.07.01
 ### Fixed
@@ -24,12 +24,12 @@
  - JobHandler clean() method to use the correct erase pattern
  - JobHandler std::deque to std::list for faster mid-container erases
 
-### Added 
+### Added
  - canHandleExceptionAndStartNewJob test case
 
 ## [0.2.0] - 2021.06.02
-### Added 
- - JobHandler 
+### Added
+ - JobHandler
  - JobHandlerTests
  - StoppablePtr alias
  - StoppableTask destructor to stop the task before destruction is finished
@@ -40,13 +40,14 @@
  - StoppableTask::stopTask to return bool instead of throwing an exception
 
 ## [0.1.0] - 2020.09.29
-### Added 
+### Added
  - Stoppable
- - StoppableTask 
+ - StoppableTask
  - unit tests
  - conan packaging
  - conan package integration test
  - documentation
  - LICENSE and NOTICE files
- - Contributing guide 
+ - Contributing guide
  - Authors
+- Authors
