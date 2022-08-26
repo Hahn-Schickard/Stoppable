@@ -9,13 +9,54 @@ import os
 import difflib
 import re
 from typing import List
-from utilities import run_process
 import json
+import subprocess
 
 if sys.version_info < (3, 6):
     raise RuntimeError("This package requires Python 3.6 or later")
 
 VERBOSE = False
+
+
+class PIPE_Value:
+    def __init__(self, stdout: List[str], stderr: List[str]):
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
+    command = [executable]
+    if arguments:
+        command.extend(arguments)
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, encoding=encoding, universal_newlines=True)
+        stdout = []
+        if live_print:
+            while True:
+                line = process.stdout.readline()
+                if line == '' and process.poll() is not None:
+                    break
+                if line:
+                    stdout.append(line)
+                    print(line.strip())
+        else:
+            process.wait()
+            stdout = process.stdout.readlines()
+        stderr = process.stderr.readlines()
+        if throw_on_failure:
+            if stderr:
+                error_msg = 'Running command ' + \
+                    ' '.join(command) + ' returned an error: ' + \
+                    '\n'.join(stderr)
+                raise OSError(process.returncode, ''.join(error_msg))
+            else:
+                return PIPE_Value(stdout, [])
+        else:
+            return PIPE_Value(stdout, stderr)
+    except subprocess.CalledProcessError as exception:
+        raise RuntimeError('An exception occurred while running command: ' +
+                           ' '.join(command) + ' Exception is: ' + exception.output)
 
 
 def print_verbose(message: str):
@@ -71,8 +112,7 @@ def get_ignored(ignored: str):
 def filter_ignored(files: List[str], file_types: str, ignored: str, pattern: str):
     ignored_files = get_ignored(ignored)
     file_types = file_types.split(',')
-
-    for file in files:
+    for file in list(files):
         if list(filter(file.endswith, file_types)) == []:
             print_verbose(
                 'Ignorring file {} since it`s type is not supported'.format(file))
@@ -84,7 +124,6 @@ def filter_ignored(files: List[str], file_types: str, ignored: str, pattern: str
             print_verbose(
                 'Ignorring file {}, due to it matching RegEx {}'.format(file, pattern))
             files.remove(file)
-
     return files
 
 
@@ -95,19 +134,23 @@ def format_file(executable: str, file: str, formatter_args: List[str] = []):
     args.append(file)
     print_verbose('Running {} {}'.format(executable, ' '.join(args)))
     process = run_process(
-        executable, args, throw_on_failure=False)
+        executable, args, throw_on_failure=False, live_print=VERBOSE)
     if process.stderr:
         raise RuntimeError('Running {} {} returned an unhandled error: {}'.format(
-            executable, ' '.join(args), process.stderr))
-    return process.stdout.splitlines(keepends=True)
+            executable, ' '.join(args), '\n'.join(process.stderr)))
+    else:
+        return process.stdout
 
 
 def get_diff(original_file: str, formatted: List[str]):
-    with open(original_file) as file_stream:
-        original = file_stream.readlines()
-    differences = difflib.unified_diff(
-        formatted, original, fromfile='formmated', tofile='original')
-    return ''.join(list(differences))
+    if formatted:
+        with open(original_file) as file_stream:
+            original = file_stream.readlines()
+        differences = difflib.unified_diff(
+            formatted, original, fromfile='formmated', tofile='original')
+        return ''.join(list(differences))
+    else:
+        return None
 
 
 def print_diff(differences: List[str], original_file: str):
@@ -193,20 +236,19 @@ def do_formatting(clang_format_exe: str, save_as: str, directories: List[str], r
 
     if len(fixed_files) == 0:
         print('No files were formatted')
-        return None
-
-    return_message = str(len(fixed_files))
-    if not save_as == 'in_place':
-        return_message += (' file needs ' if len(fixed_files)
-                           == 1 else ' files need ')
-        return_message += 'to be formatted. Formatting suggestions can be found at ' + \
-            os.path.join(os.getcwd(), 'clang-format-fixes') + os.sep
-        return return_message
     else:
-        return_message += (' file ' if len(fixed_files)
-                           == 1 else ' files  ')
-        return_message += 'have been formatted'
-        print(return_message)
+        return_message = str(len(fixed_files))
+        if not save_as == 'in_place':
+            return_message += (' file needs ' if len(fixed_files)
+                               == 1 else ' files need ')
+            return_message += 'to be formatted. Formatting suggestions can be found at ' + \
+                os.path.join(os.getcwd(), 'clang-format-fixes') + os.sep
+            return return_message
+        else:
+            return_message += (' file ' if len(fixed_files)
+                               == 1 else ' files  ')
+            return_message += 'have been formatted'
+            print(return_message)
 
 
 def fix_files(fixes_dir: str):
