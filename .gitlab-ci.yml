@@ -30,6 +30,8 @@ build:fedora-34:
   image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
+  variables:
+    CMAKE_VARIABLES: "-DSTATIC_CODE_ANALYSIS=OFF"
 
 test:debian-buster:
   extends: .test
@@ -95,26 +97,26 @@ analyze_memory_usage:fedora-34:
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-34"]
 
-check_code_coverage:debian-buster:
+check_code_coverage:debian-bullseye:
   extends: .check_code_coverage
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster", "test:debian-buster"]
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  needs: ["build:debian-bullseye", "test:debian-bullseye"]
 
-lint:debian-buster:
+lint:debian-bullseye:
   extends: .lint
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster"]
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  needs: ["build:debian-bullseye"]
 
 document:debian-buster:
   extends: .document
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster"]
+  needs: ["build:debian-bullseye"]
 
 package:stable:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
 
 pages:latest:
   extends: .pages
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster"]
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  needs: ["build:debian-bullseye", "check_code_coverage:debian-bullseye", "document:debian-buster"]
