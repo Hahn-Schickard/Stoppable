@@ -10,7 +10,7 @@ find_package(Threads)
 
 add_executable(example example.cpp)
 
-target_link_libraries(example PUBLIC 
+target_link_libraries(example PUBLIC
                               ${CONAN_LIBS}
                               Threads::Threads
 )

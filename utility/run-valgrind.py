@@ -15,7 +15,7 @@ class PIPE_Value:
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
+def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
     command = [executable]
     if arguments:
         command.extend(arguments)
@@ -79,7 +79,7 @@ def read_log(logfile: str):
         return file.read()
 
 
-def run_memory_analysis(analyzer: str, settings: List[str], error_beggining_marker: str, error_end_marker: str, target: str, arguments: list, output_file=""):
+def run_memory_analysis(analyzer: str, settings: [str], error_beggining_marker: str, error_end_marker: str, target: str, arguments: list, output_file=""):
     file_exists(target)
     settings.append(target)
     if arguments:
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "target", help="full path to the binary target that will be analyzed", type=str)
-    parser.add_argument('arguments', nargs='?', default=[],
+    parser.add_argument('arguments', nargs='*', default=[],
                         help="add an argument to the list of arguments, that are used by the target binary")
     args = parser.parse_args()
     try:

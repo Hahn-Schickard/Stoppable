@@ -16,15 +16,16 @@ if sys.version_info < (3, 6):
     raise RuntimeError("This package requires Python 3.6 or later")
 
 VERBOSE = False
+LIST_FILES = False
 
 
 class PIPE_Value:
-    def __init__(self, stdout: List[str], stderr: List[str]):
+    def __init__(self, stdout: [str], stderr: [str]):
         self.stdout = stdout
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
+def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
     command = [executable]
     if arguments:
         command.extend(arguments)
@@ -82,7 +83,7 @@ def get_files_from_dir(dir_path: str, recursive: bool = False):
         sys.exit(False)
 
 
-def get_files(directories: List[str], recursive: bool = False):
+def get_files(directories: [str], recursive: bool = False):
     files = []
 
     for directory in directories:
@@ -109,25 +110,25 @@ def get_ignored(ignored: str):
         print('No ignore file specified')
 
 
-def filter_ignored(files: List[str], file_types: str, ignored: str, pattern: str):
+def filter_ignored(files: [str], file_types: str, ignored: str, pattern: str):
     ignored_files = get_ignored(ignored)
     file_types = file_types.split(',')
     for file in list(files):
         if list(filter(file.endswith, file_types)) == []:
             print_verbose(
-                'Ignorring file {} since it`s type is not supported'.format(file))
+                'Ignoring file {} since it`s type is not supported'.format(file))
             files.remove(file)
         if ignored_files and file in ignored_files:
             print_verbose(
-                'Ignorring file {}, due to it being listed in {}'.format(file, ignored))
+                'Ignoring file {}, due to it being listed in {}'.format(file, ignored))
         if pattern and re.match(pattern, file):
             print_verbose(
-                'Ignorring file {}, due to it matching RegEx {}'.format(file, pattern))
+                'Ignoring file {}, due to it matching RegEx {}'.format(file, pattern))
             files.remove(file)
     return files
 
 
-def format_file(executable: str, file: str, formatter_args: List[str] = []):
+def format_file(executable: str, file: str, formatter_args: [str] = []):
     args = []
     for argument in formatter_args:
         args.append(argument)
@@ -142,24 +143,23 @@ def format_file(executable: str, file: str, formatter_args: List[str] = []):
         return process.stdout
 
 
-def get_diff(original_file: str, formatted: List[str]):
+def get_diff(original_file: str, formatted: [str]):
     if formatted:
         with open(original_file) as file_stream:
             original = file_stream.readlines()
         differences = difflib.unified_diff(
-            formatted, original, fromfile='formmated', tofile='original')
+            formatted, original, fromfile='formatted', tofile='original')
         return ''.join(list(differences))
     else:
         return None
 
 
-def print_diff(differences: List[str], original_file: str):
-    print('{} needs to be formated'.format(original_file))
-    if VERBOSE:
-        print(differences)
+def print_diff(differences: [str], original_file: str):
+    print('{} needs to be formatted'.format(original_file))
+    print(differences)
 
 
-def save_formatted(formatted: List[str], formatted_filename: str, original_filename: str):
+def save_formatted(formatted: [str], formatted_filename: str, original_filename: str):
     if formatted:
         fixes_dir = 'clang-format-fixes'
         if not os.path.isdir(fixes_dir):
@@ -167,34 +167,38 @@ def save_formatted(formatted: List[str], formatted_filename: str, original_filen
         fixes_path = os.path.join(fixes_dir, formatted_filename)
         with open(fixes_path, 'w') as fixes:
             print_verbose(
-                'Saving formmatter suggestions to {} file'.format(fixes_path))
+                'Saving formatter suggestions to {} file'.format(fixes_path))
             fixes.writelines(formatted)
 
-        formated_files_manifest_path = os.path.join(
+        formatted_files_manifest_path = os.path.join(
             fixes_dir, 'formatted_files.json')
-        formated_files = {}
-        if os.path.isfile(formated_files_manifest_path):
-            with open(formated_files_manifest_path, 'r') as formated_files_json:
-                formated_files = json.load(formated_files_json)
+        formatted_files = {}
+        if os.path.isfile(formatted_files_manifest_path):
+            with open(formatted_files_manifest_path, 'r') as formatted_files_json:
+                formatted_files = json.load(formatted_files_json)
 
         relative_original_path = os.path.relpath(original_filename)
-        if not relative_original_path in formated_files:
+        if not relative_original_path in formatted_files:
             print_verbose('Adding {} file to fixes manifest {}'.format(
-                fixes_path, formated_files_manifest_path))
-            formated_files[relative_original_path] = fixes_path
-        with open(formated_files_manifest_path, 'w') as formated_files_json:
-            json.dump(formated_files, formated_files_json)
+                fixes_path, formatted_files_manifest_path))
+            formatted_files[relative_original_path] = fixes_path
+        with open(formatted_files_manifest_path, 'w') as formatted_files_json:
+            json.dump(formatted_files, formatted_files_json)
     else:
         raise RuntimeError('Given file {} has no formatting suggestions to save for file {}'.format(
             formatted_filename, original_filename))
 
 
-def do_formatting(clang_format_exe: str, save_as: str, directories: List[str], recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
+def do_formatting(clang_format_exe: str, save_as: str, directories: [str], recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
     files = get_files(directories, recursive)
     files = filter_ignored(files, file_types, ignored, ignore_pattern)
 
     if not files:
         raise RuntimeError('No files found')
+
+    if LIST_FILES:
+        print('Parsed Files:')
+        print('\n'.join(files))
 
     formatter_args = []
     if save_as == 'in_place':
@@ -291,7 +295,7 @@ def main():
             DEFAULT_EXTENSIONS),
         default=DEFAULT_EXTENSIONS)
     parser.add_argument('--dirs', metavar='directory-location',
-                        help='list of directories, seperated by space, that include formatable files', nargs='+', default=[])
+                        help='list of directories, separated by space, that include formattable files', nargs='+', default=[])
     parser.add_argument(
         '-r',
         '--recursive',
@@ -302,8 +306,13 @@ def main():
         '--verbose',
         action='store_true',
         help='verbose print all of the actions')
+    parser.add_argument(
+        '-l',
+        '--list-files',
+        action='store_true',
+        help='lists all parsed files')
     parser.add_argument('--fix', metavar='clang-format-fixes',
-                        help='uses specified fixes to apply externally gererated formatter changes')
+                        help='uses specified fixes to apply externally generated formatter changes')
     parser.add_argument(
         '--save-as',
         default='formatted_file',
@@ -312,7 +321,7 @@ def main():
         choices=['in_place', 'formatted_file', 'diff_file'],
         help='Specifies how to save formatter changes.' +
         'Choosing in_place applies formatter fixes in formatted file.' +
-        'Choosing formatted_file will save the entire formmated file as a new file appended with _formatted to it`s name.' +
+        'Choosing formatted_file will save the entire formatted file as a new file appended with _formatted to it`s name.' +
         'Choosing diff_file will save differences between the original file and formatted file in a separate .diff file')
     parser.add_argument(
         '--ignore',
@@ -327,6 +336,8 @@ def main():
     args = parser.parse_args()
     global VERBOSE
     VERBOSE = args.verbose
+    global LIST_FILES
+    LIST_FILES = args.list_files
 
     print_verbose(args)
     if not args.fix:
