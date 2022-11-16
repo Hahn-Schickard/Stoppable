@@ -1,4 +1,9 @@
 # Changelog
+## [0.2.4] - 2022.11.16
+### Changed
+ - conan packaging recipe
+ - gtest dependency to fuzzy v1.11
+
 ## [0.2.3] - 2022.02.03
 ### Fixed
  - missing <thread> include in JobHander.hpp
