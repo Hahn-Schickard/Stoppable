@@ -1,3 +1,4 @@
+# Changelog
 ## [0.2.3] - 2022.02.03
 ### Fixed
  - missing <thread> include in JobHander.hpp
@@ -8,8 +9,8 @@
  - JobHandler to conan integration test
 
 ### Changed
- - JobHandlerTests.cc rethrowException() to use const & instead of value
- - JobHandlerTests.cc FakeException::()(const shared_ptr<bool> &completed) to use const & instead of value
+ - JobHandlerTests.cc `rethrowException()` to use **const &** instead of value
+ - JobHandlerTests.cc `FakeException::()(const shared_ptr<bool> &completed)` to use const & instead of value
  - StoppableTaskTests.cc to be compliant with readability rules in clang-tidy
  - conan integration test to better test StoppableTask
 
@@ -19,10 +20,10 @@
 
 ## [0.2.1] - 2021.07.01
 ### Changed
- - JobHandler std::exception to ellipsis operator to handle anything that can be thrown
- - JobHandler tryClean() method to use remove_if() idiom
- - JobHandler clean() method to use the correct erase pattern
- - JobHandler std::deque to std::list for faster mid-container erases
+ - JobHandler `std::exception` to ellipsis operator to handle anything that can be thrown
+ - JobHandler `tryClean()` method to use `remove_if()` idiom
+ - JobHandler `clean()` method to use the correct erase pattern
+ - JobHandler `std::deque` to `std::list` for faster mid-container erases
 
 ### Added
  - canHandleExceptionAndStartNewJob test case
@@ -35,9 +36,9 @@
  - StoppableTask destructor to stop the task before destruction is finished
 
 ### Changed
- - StoppableTask to use StoppablePtr instead of unique_ptr<Stoppable>
- - StoppableTask::startTask to return bool instead of throwing an exception
- - StoppableTask::stopTask to return bool instead of throwing an exception
+ - StoppableTask to use StoppablePtr instead of `std::unique_ptr<Stoppable>`
+ - `StoppableTask::startTask` to return bool instead of throwing an exception
+ - `StoppableTask::stopTask` to return bool instead of throwing an exception
 
 ## [0.1.0] - 2020.09.29
 ### Added
@@ -50,4 +51,3 @@
  - LICENSE and NOTICE files
  - Contributing guide
  - Authors
-- Authors
