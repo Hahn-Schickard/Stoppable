@@ -45,7 +45,7 @@ private:
   chrono::milliseconds delay_ = chrono::milliseconds(0);
 };
 
-// NOLINTNEXTLINE
+// NOLINTBEGIN(readability-magic-numbers)
 TEST(JobHandlerTests, canAddAndClearJob) {
   try {
     auto exception_handler = std::bind(&rethrowException, placeholders::_1);
@@ -179,3 +179,4 @@ TEST(JobHandlerTests, canHandleExceptionAndStartNewJob) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
 }
+// NOLINTEND(readability-magic-numbers)
