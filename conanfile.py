@@ -14,8 +14,8 @@ def to_camel_case(input: str):
 class PackageConan(ConanFile):
     # @+ START USER META CONFIG
     license = "Apache 2.0"
-    description = "Header only implementation of a generic visitor patter for std::variant"
-    topics = ("pattern", "variant visitor", "cpp17")
+    description = "A header only implementation of a utility classes that help develop multi-threaded code"
+    topics = ("pattern", "stoppable", "multi-threading", "cpp17")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
                "fPIC": [True, False]}
@@ -53,6 +53,11 @@ class PackageConan(ConanFile):
         self.test_requires("gtest/[~1.11]")
         # @- END USER REQUIREMENTS
 
+    def configure(self):
+        # @+ START USER REQUIREMENTS OPTION CONFIGURATION
+        pass
+        # @- END USER REQUIREMENTS OPTION CONFIGURATION
+
     def layout(self):
         cmake_layout(self)
 
@@ -84,8 +89,8 @@ class PackageConan(ConanFile):
         self.cpp_info.libs = collect_libs(self)
         self.cpp_info.set_property("cmake_find_mode", "both")
         # @+ START USER DEFINES
-        self.cpp_info.set_property("cmake_file_name", to_camel_case(self.name))
-        cmake_target_name = to_camel_case(
-            self.name) + "::" + to_camel_case(self.name)
-        self.cpp_info.set_property("cmake_target_name", cmake_target_name)
+        project_name = to_camel_case(self.name)
         # @- END USER DEFINES
+        self.cpp_info.set_property("cmake_file_name", project_name)
+        cmake_target_name = project_name + "::" + project_name
+        self.cpp_info.set_property("cmake_target_name", cmake_target_name)

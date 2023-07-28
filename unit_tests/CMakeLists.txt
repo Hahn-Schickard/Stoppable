@@ -4,17 +4,29 @@ set(THIS Unit_Tests_Runner)
 
 file(GLOB StoppableTestsSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
 
+#@+ ====================== User TEST_SUITES configuration ==========================
+list(APPEND TEST_SUITES
+                       ${StoppableTestsSuite}
+)
+#@- ========================= END OF USER CONFIGURATION ============================
+
 find_package(GTest REQUIRED)
 
 add_executable(${THIS})
 target_sources(${THIS} PRIVATE
                        "testRunner.cpp"
-                       ${StoppableTestsSuite}
+                       ${TEST_SUITES}
 )
 
-target_link_libraries(${THIS} PUBLIC
-                              GTest::gtest
+#@+ ==================== User TEST_DEPENDCIES configuration =======================
+list(APPEND TEST_DEPENDCIES
                               Stoppable_Task
+)
+#@- ========================= END OF USER CONFIGURATION ===========================
+
+target_link_libraries(${THIS} PUBLIC
+                              ${TEST_DEPENDCIES}
+                              GTest::gtest
 )
 
 add_test(
