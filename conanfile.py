@@ -69,6 +69,7 @@ class PackageConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.variables['STATIC_CODE_ANALYSIS'] = False
         tc.variables['RUN_TESTS'] = False
+        tc.variables['COVERAGE_TRACKING'] = False
         tc.variables['CMAKE_CONAN'] = False
         tc.cache_variables["CMAKE_POLICY_DEFAULT_CMP0077"] = "NEW"
         tc.generate()
