@@ -1,4 +1,13 @@
 # Changelog
+## [0.2.7] - 2024.08.05
+### Added
+ - windows support
+ - example runner 
+
+### Removed
+ - `FIND_INSTALLED_DEPENDENCIES` macro usage from root `CMakeLists.txt`
+ - `WRITE_PKG_CONFIG_IN_FILE` macro usage from root `CMakeLists.txt`
+
 ## [0.2.6] - 2023.07.28 
 ### Added 
  - usage example in documentation intro
