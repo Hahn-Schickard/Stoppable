@@ -60,7 +60,7 @@ TEST(JobHandlerTests, canAddAndClearJob) {
     auto job_handled_future =
         async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed);
     job_handler->add(move(job_handled_future));
-    this_thread::sleep_for(chrono::milliseconds(20));
+    this_thread::sleep_for(chrono::milliseconds(30));
 
     EXPECT_TRUE(*job_completed);
   } catch (exception& ex) {
@@ -82,7 +82,7 @@ TEST(JobHandlerTests, canEmplaceAndClearJob) {
 
     job_handler->emplace(
         async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed));
-    this_thread::sleep_for(chrono::milliseconds(20));
+    this_thread::sleep_for(chrono::milliseconds(30));
 
     EXPECT_TRUE(*job_completed);
   } catch (exception& ex) {
@@ -147,7 +147,7 @@ TEST(JobHandlerTests, canHandleException) {
     auto job_handled_future =
         async(launch::async, FakeJob(chrono::milliseconds(10)));
     job_handler->add(move(job_handled_future));
-    this_thread::sleep_for(chrono::milliseconds(20));
+    this_thread::sleep_for(chrono::milliseconds(30));
   } catch (exception& ex) {
     FAIL() << "Caught an unhandled exception: " << ex.what() << endl;
   }
@@ -172,7 +172,7 @@ TEST(JobHandlerTests, canHandleExceptionAndStartNewJob) {
         async(launch::async, FakeJob(chrono::milliseconds(10)), job_completed);
     job_handler->add(move(completes_job));
 
-    this_thread::sleep_for(chrono::milliseconds(20));
+    this_thread::sleep_for(chrono::milliseconds(30));
 
     EXPECT_TRUE(*job_completed);
   } catch (exception& ex) {
