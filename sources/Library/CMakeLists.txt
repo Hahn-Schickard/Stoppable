@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.12) 
 
-set(THIS Stoppable_Task)
+#@+ ======================== User MODULE NAME configuration ============================
+set(THIS HeaderOnly)
+#@- =========================== END OF USER CONFIGURATION ===============================
 
-find_package(Threads REQUIRED)
+set(MODULE ${PROJECT_NAME}_${THIS})
 
 list(APPEND THIS_INCLUDES_DIRS
             ${INCLUDES_DIR}/
@@ -12,24 +14,27 @@ file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 
 INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
 
-add_library(${THIS} INTERFACE)        
+add_library(${MODULE} INTERFACE)        
 
-target_link_libraries(${THIS} INTERFACE 
-                              Threads::Threads
+#@+ ======================== User DEPENDENCIES configuration ============================
+target_link_libraries(${MODULE} INTERFACE 
+                      Threads::Threads
 )
+#@- =========================== END OF USER CONFIGURATION ===============================
 
-target_include_directories(${THIS} INTERFACE
+target_include_directories(${MODULE} INTERFACE
                            $<BUILD_INTERFACE:${INCLUDES_DIR}>
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
                            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 )
 
-target_compile_features(${THIS} INTERFACE cxx_std_17)
+target_compile_features(${MODULE} INTERFACE cxx_std_17)
 
 install(
-    TARGETS ${THIS}
-    EXPORT ${PROJECT_NAME}Targets
+    TARGETS ${MODULE}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 install(

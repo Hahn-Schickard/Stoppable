@@ -6,11 +6,9 @@ file(GLOB StoppableTestsSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
 
 #@+ ====================== User TEST_SUITES configuration ==========================
 list(APPEND TEST_SUITES
-                       ${StoppableTestsSuite}
+            ${TestSuite}
 )
 #@- ========================= END OF USER CONFIGURATION ============================
-
-find_package(GTest REQUIRED)
 
 add_executable(${THIS})
 target_sources(${THIS} PRIVATE
@@ -20,7 +18,7 @@ target_sources(${THIS} PRIVATE
 
 #@+ ==================== User TEST_DEPENDCIES configuration =======================
 list(APPEND TEST_DEPENDCIES
-                              Stoppable_Task
+            ${PROJECT_NAME}_HeaderOnly
 )
 #@- ========================= END OF USER CONFIGURATION ===========================
 
@@ -37,3 +35,25 @@ add_test(
 set_target_properties(${THIS} PROPERTIES
                               CXX_STANDARD 17
 )
+
+if(WIN32)
+    add_custom_command(TARGET ${THIS} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy
+                        -t $<TARGET_FILE_DIR:${THIS}>
+                        $<TARGET_RUNTIME_DLLS:${THIS}>
+                        COMMAND_EXPAND_LISTS
+    )
+    # Workaround to get conan .dll files into build
+    foreach(directory ${CONAN_RUNTIME_LIB_DIRS})
+        file(GLOB dir_dependencies "${directory}/*.dll")
+        if(dir_dependencies)
+            list(APPEND dependencies "${dir_dependencies}")
+        endif()
+    endforeach()
+    add_custom_command(TARGET ${THIS} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy
+                        -t $<TARGET_FILE_DIR:${THIS}>
+                        ${dependencies}
+                        COMMAND_EXPAND_LISTS
+    )
+endif()
