@@ -16,7 +16,7 @@ target_sources(${MODULE} PRIVATE
 
 #@+ ======================== User DEPENDENCIES configuration ============================
 target_link_libraries(${MODULE} PRIVATE 
-                      ${PROJECT_NAME}_HeaderOnly
+                      ${PROJECT_NAME}
 )
 #@- =========================== END OF USER CONFIGURATION ===============================
 

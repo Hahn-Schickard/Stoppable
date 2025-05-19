@@ -18,7 +18,7 @@ target_sources(${THIS} PRIVATE
 
 #@+ ==================== User TEST_DEPENDCIES configuration =======================
 list(APPEND TEST_DEPENDCIES
-            ${PROJECT_NAME}_HeaderOnly
+            ${PROJECT_NAME}
 )
 #@- ========================= END OF USER CONFIGURATION ===========================
 

@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.12) 
 
-#@+ ======================== User MODULE NAME configuration ============================
-set(THIS HeaderOnly)
-#@- =========================== END OF USER CONFIGURATION ===============================
-
-set(MODULE ${PROJECT_NAME}_${THIS})
+set(MODULE ${PROJECT_NAME})
 
 list(APPEND THIS_INCLUDES_DIRS
             ${INCLUDES_DIR}/
