@@ -2,33 +2,20 @@
 #define __MULTITHREADING_STOPABLE_HPP
 
 #include <chrono>
+#include <functional>
 #include <future>
 #include <memory>
 
+namespace Stoppable{
 /**
  * @brief Defines a Stoppable routine
  *
  */
-class Stoppable {
-  std::promise<void> exitSignal_;
-  std::future<void> exitFuture_;
+struct Stoppable {
+  using Iteration = std::function<void()>;
 
-protected:
-  /**
-   * @brief Implements a routine that can be stopped
-   *
-   * Implement in a do-while cycle
-   * @code
-   * do{
-   *  // runner task
-   * }while(!stopRequested());
-   * @endcode
-   *
-   */
-  virtual void run() = 0;
-
-public:
-  Stoppable() : exitFuture_(exitSignal_.get_future()) {}
+  explicit Stoppable(Iteration&& iteration) 
+      : exitFuture_(exitSignal_.get_future()), iteration_(std::move(iteration)) {}
 
   Stoppable(Stoppable&& instance)
       : exitSignal_(std::move(instance.exitSignal_)),
@@ -46,7 +33,11 @@ public:
    * @brief Starts to run a given routine
    *
    */
-  void start() { run(); }
+  void start() {
+    do {
+      iteration_();
+    } while (!stopRequested());
+  }
 
   /**
    * @brief Checks if exit signal was set
@@ -67,8 +58,13 @@ public:
    *
    */
   void stop() { exitSignal_.set_value(); }
+
+private:
+  std::promise<void> exitSignal_;
+  std::future<void> exitFuture_;
+  Iteration iteration_;
 };
 
 using StoppablePtr = std::shared_ptr<Stoppable>;
-
+}
 #endif //__MULTITHREADING_STOPABLE_HPP
