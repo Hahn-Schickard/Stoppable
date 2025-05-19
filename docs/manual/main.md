@@ -6,62 +6,51 @@ A header only implementation of a utility classes that help develop multi-thread
 
 ### Contains:
  * `Stoppable` - A class that provides functionality to start and stop a given routine
- * `StoppableTask` - A class that manages `Stoppable` in a separate thread
- * `JobHandler` - A class that cleans up allocated `std::future` instances from `std::async` calls.
+ * `Task` - A class that manages `Stoppable` in a separate thread
 
 ### Example
 ```cpp
-#include "Stoppable/JobHandler.hpp"
-#include "Stoppable/StoppableTask.hpp"
+#include "Stoppable/Task.hpp"
 
 #include <functional>
 #include <iostream>
 #include <thread>
 
 using namespace std;
+using namespace Stoppable;
 
-class StoppableImplementation : public Stoppable {
-  void run() override {
-    do {
-      cout << "Running cycle!" << endl;
-      this_thread::sleep_for(1s);
-    } while (!stopRequested());
+struct ExampleTask {
+  void iteration() {
+    cout << "Running cycle " << counter_ << endl;
+    counter_++;
+    this_thread::sleep_for(10ms);
   }
+
+private:
+  size_t counter_ = 0;
 };
 
-void handleException(const std::exception_ptr &ex_ptr) {
+void handleException(const std::exception_ptr& ex_ptr) {
   try {
     if (ex_ptr) {
       rethrow_exception(ex_ptr);
     }
-  } catch (const exception &e) {
+  } catch (const exception& e) {
     cout << e.what() << endl;
   }
 }
 
 int main() {
   {
-    auto task = make_unique<StoppableTask>(
-        make_shared<StoppableImplementation>(), "Runner");
-    cout << "Starting " << task->getName() << endl;
-    task->startTask();
-    this_thread::sleep_for(0.5s);
-    task->stopTask();
-    cout << task->getName() << " stopped" << endl;
+    auto example_task = make_unique<ExampleTask>();
+    auto task = make_unique<Task>(bind(handleException, placeholders::_1),
+        bind(&ExampleTask::iteration, *example_task));
+    task->start();
+    this_thread::sleep_for(0.1s);
+    task->stop();
   }
 
   cout << "All Tasks have bean cleaned up!" << endl;
-
-  {
-    auto job_handler =
-        make_unique<JobHandler>(bind(&handleException, placeholders::_1));
-    job_handler->add(async(launch::async, [&]() {
-      cout << "Job Started" << endl;
-      this_thread::sleep_for(0.5s);
-      cout << "Job finished" << endl;
-    }));
-  }
-  cout << "All Jobs have bean cleaned up!" << endl;
 
   exit(EXIT_SUCCESS);
 }
