@@ -1,23 +1,29 @@
 <img src="docs/images/vendor-logo.png" alt="" width="200"/>
 
-# Stoppable
+# PROJECT_NAME
 
 ## Description
 A header only implementation of a utility classes that help develop multi-threaded code, requires std::thread library and C++11 support.
 
 ### Contains:
  * `Stoppable` - A class that provides functionality to start and stop a given routine
- * `StoppableTask` - A class that manages `Stoppable` in a separate thread
- * `JobHandler` - A class that cleans up allocated `std::future` instances from `std::async` calls.
+ * `Task` - A class that manages `Stoppable` in a separate thread
 
 ## Documentation
-If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following:
+
+This project uses [Doxygen](https://github.com/doxygen/doxygen) to create the documentation from comments in the header as well as markdown files in `docs/manual` directory. This project also uses a modified [Doxygen Awesome CSS](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/devops/doxygen-awesome-css) style. Please initialize the git submodules to use this Doxygen style to have the documentation generated as intended. 
+
+```bash
+git submodule update --init --recursive
+```
+
+If you want to have the latest documentation with your changes locally, you can generate it with by running the following command from project root:
 
 ```bash
 doxygen Doxyfile
 ```
 
-This will generate html like documentation at `[PROJECT_ROOT]/docs/code_documentation/html`. To use it open the `[PROJECT_ROOT]/docs/code_documentation/html/index.html` file with your browser.
+This will generate html like documentation at `[PROJECT_ROOT]/docs/html`. To use it open the `[PROJECT_ROOT]/docs/html/index.html` file with your browser.
 
 ## Dependencies
 ### Required
@@ -25,13 +31,13 @@ This will generate html like documentation at `[PROJECT_ROOT]/docs/code_document
 * compiler with C++17 support
 * cmake 3.24.0 >= - build system generator, used by package generator as well
 * python3 - used by utilities and package generator
-* conan 2.4.0 >= - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation
+* conan 2.4.0 >= - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation 
 
 ### Optional
 
 * ninja - build system (alternative to `make`)
-* clang-format 15.0.7 - to use formatting tools
-* clang-tidy 15.0.7 - to use static code analysis
+* clang-format >=19.1.4 - to use formatting tools
+* clang-tidy >=19.1.4 - to use static code analysis
 * lcov - to generate code coverage reports
 * valgrind - to run memory analysis
 * doxygen 1.9.8 >= - to generate documentation from code
@@ -87,10 +93,10 @@ ctest --verbose
 
 ## Creating local conan package
 
-To create a custom local package first define `VERSION`, `USER` and `CHANEL` environmental variables. These variables will tell conan how to name the package.
+To create a custom local package first define `VERSION`, `USER` and `CHANEL` environmental variables. These variables will tell conan how to name the package. 
 
 - `VERSION` variable specifies package version number in the following format `${MAJOR}.${MINOR}.${PATCH}`. For more information see [Release versioning schema](CONTRIBUTING.md#release-versioning-schema)
-- `USER` variable specifies the name of release community (for example `hahn-schickard`, `bincrafters`, etc.), it is used to showcase that this package is outside of [conan-center-index](https://conan.io/center/) repository
+- `USER` variable specifies the name of release community (for example `hahn-schickard`, `bincrafters`, etc.), it is used to showcase that this package is outside of [conan-center-index](https://conan.io/center/) repository 
 - `CHANEL` variable specifies the package type, i.e. if it is a stable, development or nightly release
 
 ### Conan v1
@@ -108,21 +114,8 @@ To create local conan packages run the following command in project root directo
 conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing
 ```
 
-In case you need to specify C++ standard, run the following command in project root directory:
+In case you need to specify C++ standard, run the following command in project root directory: 
 
 ```bash
 conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
 ```
-
-## Project utility tools
-
-This project comes with integrated utility scripts written in python3 to check code coverage with **gcov** and **lcov**, check for memory leaks with **valgrind** and generate documentation with **Doxygen**. You can use these by running the following:
-
-* `python3 utility/run-lcov.py --help` - to learn how to use **lcov** wrapper
-* `python3 utility/run-valgrind.py --help` - to learn how to use **valgrind** wrapper
-* `python3 utility/run-clang-tidy.py --help` - to learn how to use **run-clang-tidy** wrapper
-* `python3 utility/run-clang-format.py --help` - to learn how to use **run-clang-format** wrapper
-
-Hidden files and scripts within utility directory are used by CI/CD pipeline or as configuration files for the wrappers.
-
-This directory is typically maintained via [Project-Configurator](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/project-configurator) program and SHOULD not be modified manually. Any modifications SHOULD be done in [Project Template](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/project-template/-/tree/cpp) repository instead and updated via [Project-Configurator](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/project-configurator) once released.
