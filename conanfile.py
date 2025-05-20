@@ -17,10 +17,8 @@ class PackageConan(ConanFile):
     description = "A header only implementation of a utility classes that help develop multi-threaded code"
     topics = ("pattern", "stoppable", "multi-threading", "cpp17")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False],
-               "fPIC": [True, False]}
-    default_options = {"shared": True,
-                       "fPIC": True}
+    options = {}
+    default_options = {}
     default_user = "Hahn-Schickard"
     # @- END USER META CONFIG
     exports_sources = [
