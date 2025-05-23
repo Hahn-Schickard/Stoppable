@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.8] - 2025.05.23
+### Changed
+ - gtest to v 2.16
+
 ## [0.2.7] - 2024.08.05
 ### Added
  - windows support
