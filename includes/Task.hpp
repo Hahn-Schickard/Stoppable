@@ -14,30 +14,23 @@ namespace Stoppable {
  */
 
 struct Task {
-  using ExceptionHandler = std::function<void(const std::exception_ptr&)>;
-
-  Task(const Routine::Cycle& cycle, const ExceptionHandler& handler)
+  Task(const Routine::Cycle& cycle, const Routine::ExceptionHandler& handler)
       : cycle_(cycle), handler_(handler) {}
 
-  // Task(const Task&) = delete;
-  // Task(Task&& other) = delete;
-  // Task& operator=(const Task&) = delete;
-  // Task& operator=(Task&& other) = delete;
+  Task(const Task&) = delete;
+  Task(Task&& other) = delete;
+  Task& operator=(const Task&) = delete;
+  Task& operator=(Task&& other) = delete;
 
   virtual ~Task() { stop(); }
 
   void start() noexcept {
     if (!routine_thread_) {
       std::unique_lock guard(mx_);
-      routine_ = std::make_unique<Routine>(cycle_);
+      routine_ = std::make_unique<Routine>(cycle_, handler_);
       auto is_running = routine_->running();
-      routine_thread_ = std::make_unique<std::thread>([this]() {
-        try {
-          routine_->run();
-        } catch (...) {
-          handler_(std::current_exception());
-        }
-      });
+      routine_thread_ =
+          std::make_unique<std::thread>([this]() { routine_->run(); });
       is_running.wait();
     }
   }
@@ -51,6 +44,7 @@ struct Task {
     if (routine_thread_) {
       std::unique_lock guard(mx_);
       if (routine_thread_->joinable()) {
+        routine_->stop();
         routine_.reset();
         routine_thread_->join();
       }
@@ -61,7 +55,7 @@ struct Task {
 private:
   std::mutex mx_;
   Routine::Cycle cycle_;
-  ExceptionHandler handler_;
+  Routine::ExceptionHandler handler_;
   std::unique_ptr<Routine> routine_;
   std::unique_ptr<std::thread> routine_thread_;
 };

@@ -12,10 +12,13 @@ using namespace ::testing;
 
 TEST(RoutineTests, canRun) {
   MockFunction<void()> mock_cycle;
+  MockFunction<void(const std::exception_ptr&)> mock_handler;
 
+  EXPECT_CALL(mock_handler, Call(_)).Times(Exactly(0));
   EXPECT_CALL(mock_cycle, Call()).Times(AtLeast(1));
 
-  auto routine = make_unique<Routine>(mock_cycle.AsStdFunction());
+  auto routine = make_unique<Routine>(
+      mock_cycle.AsStdFunction(), mock_handler.AsStdFunction());
   auto is_running = routine->running();
   auto routine_thread = thread([&routine]() { routine->run(); });
 
