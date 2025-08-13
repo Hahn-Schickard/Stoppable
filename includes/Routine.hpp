@@ -18,11 +18,10 @@ struct Routine {
   explicit Routine(const Cycle& cycle)
       : exited_(exit_.get_future()), cycle_(cycle) {}
 
-  Routine(const Routine&) = delete;
-
-  Routine(Routine&& other) = delete;
-  Routine& operator=(const Routine&) = delete;
-  Routine& operator=(Routine&& other) = delete;
+  // Routine(const Routine&) = delete;
+  // Routine(Routine&& other) = delete;
+  // Routine& operator=(const Routine&) = delete;
+  // Routine& operator=(Routine&& other) = delete;
 
   virtual ~Routine() { exit_.set_value(); }
 

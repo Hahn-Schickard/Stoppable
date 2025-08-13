@@ -19,10 +19,10 @@ struct Task {
   Task(const Routine::Cycle& cycle, const ExceptionHandler& handler)
       : cycle_(cycle), handler_(handler) {}
 
-  Task(const Task&) = delete;
-  Task(Task&& other) = delete;
-  Task& operator=(const Task&) = delete;
-  Task& operator=(Task&& other) = delete;
+  // Task(const Task&) = delete;
+  // Task(Task&& other) = delete;
+  // Task& operator=(const Task&) = delete;
+  // Task& operator=(Task&& other) = delete;
 
   virtual ~Task() { stop(); }
 
