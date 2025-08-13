@@ -55,6 +55,7 @@ include(GNUInstallDirs)
 find_package(GTest REQUIRED)
 
 #@+ ========================== User PACKAGES configuration ==============================
+find_package(Threads REQUIRED)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
 if(CMAKE_CONAN)

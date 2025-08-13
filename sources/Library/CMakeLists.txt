@@ -10,6 +10,11 @@ set(TARGET ${PROJECT_NAME})
 
 add_library(${TARGET} INTERFACE)
 
+target_link_libraries(${TARGET} 
+    INTERFACE 
+        Threads::Threads
+)
+
 target_include_directories(${TARGET}
     INTERFACE
         $<BUILD_INTERFACE:${INCLUDES_DIR}>
