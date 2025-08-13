@@ -3,7 +3,7 @@ set(THIS Unit_Tests_Runner)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
 #@+ ======================== User TEST_SUITES configuration =============================
-file(GLOB TestSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
+file(GLOB TestSuite "${CMAKE_CURRENT_LIST_DIR}/Stoppable/*")
 list(APPEND TEST_SUITES
     ${TestSuite}
 )
