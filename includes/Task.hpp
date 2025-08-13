@@ -48,6 +48,7 @@ struct Task {
     if (running()) {
       std::unique_lock guard(mx_);
       routine_->stop();
+      routine_.reset();
       routine_finished_.wait();
     }
   }
