@@ -5,7 +5,6 @@
 
 #include <mutex>
 #include <stdexcept>
-#include <thread>
 
 namespace Stoppable {
 /**
@@ -25,30 +24,31 @@ struct Task {
   virtual ~Task() { stop(); }
 
   void start() noexcept {
-    if (!routine_thread_) {
+    if (!running()) {
       std::unique_lock guard(mx_);
       routine_ = std::make_unique<Routine>(cycle_, handler_);
       auto is_running = routine_->running();
-      routine_thread_ =
-          std::make_unique<std::thread>([this]() { routine_->run(); });
+      routine_finished_ =
+          std::async(std::launch::async, [this]() { routine_->run(); });
       is_running.wait();
     }
   }
 
   bool running() noexcept {
-    std::unique_lock guard(mx_);
-    return routine_thread_ != nullptr;
+    try {
+      using namespace std::chrono;
+      std::unique_lock guard(mx_);
+      return routine_finished_.wait_for(10ms) == std::future_status::timeout;
+    } catch (const std::future_error&) {
+      return false; // no future, thus not running
+    }
   }
 
   void stop() noexcept {
-    if (routine_thread_) {
+    if (running()) {
       std::unique_lock guard(mx_);
-      if (routine_thread_->joinable()) {
-        routine_->stop();
-        routine_.reset();
-        routine_thread_->join();
-      }
-      routine_thread_.reset();
+      routine_->stop();
+      routine_finished_.wait();
     }
   }
 
@@ -57,7 +57,7 @@ private:
   Routine::Cycle cycle_;
   Routine::ExceptionHandler handler_;
   std::unique_ptr<Routine> routine_;
-  std::unique_ptr<std::thread> routine_thread_;
+  std::future<void> routine_finished_;
 };
 
 using TaskPtr = std::unique_ptr<Task>;
