@@ -9,8 +9,7 @@ using namespace std;
 
 int main() {
   {
-    auto task = Stoppable::Task(
-        Stoppable::Routine([]() { this_thread::sleep_for(1ms); }),
+    auto task = Stoppable::Task([]() { this_thread::sleep_for(1ms); },
         [](const std::exception_ptr&) {});
     task.start();
     this_thread::sleep_for(10ms);
