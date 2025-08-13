@@ -4,6 +4,7 @@
 #include "Routine.hpp"
 
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <thread>
 
@@ -16,45 +17,54 @@ namespace Stoppable {
 struct Task {
   using ExceptionHandler = std::function<void(const std::exception_ptr&)>;
 
-  Task(Routine&& routine, const ExceptionHandler& handler)
-      : routine_(std::make_unique<Routine>(std::move(routine))),
-        handler_(handler) {}
+  Task(const Routine::Cycle& cycle, const ExceptionHandler& handler)
+      : cycle_(cycle), handler_(handler) {}
 
-  Task(const Routine::Iteration& iteration, const ExceptionHandler& handler)
-      : routine_(std::make_unique<Routine>(iteration)), handler_(handler) {}
+  Task(const Task&) = delete;
+  Task(Task&& other) = delete;
 
-  virtual ~Task() {
-    try {
-      stop();
-    } catch (...) {
-      handler_(std::current_exception());
-    }
-  }
+  Task& operator=(const Task&) = delete;
+  Task& operator=(Task&& other) = delete;
 
-  void start() {
+  virtual ~Task() { stop(); }
+
+  void start() noexcept {
     if (!routine_thread_) {
+      std::unique_lock guard(mx_);
+      routine_ = std::make_unique<Routine>(cycle_);
       routine_thread_ = std::make_unique<std::thread>([this]() {
         try {
-          routine_->start();
+          routine_->run();
         } catch (...) {
           handler_(std::current_exception());
         }
       });
+      using namespace std::chrono;
+      std::this_thread::sleep_for(1ms);
     }
   }
 
-  void stop() {
+  bool running() noexcept {
+    std::unique_lock guard(mx_);
+    return routine_thread_ != nullptr;
+  }
+
+  void stop() noexcept {
     if (routine_thread_) {
+      std::unique_lock guard(mx_);
       if (routine_thread_->joinable()) {
-        routine_->stop();
+        routine_.reset();
         routine_thread_->join();
       }
+      routine_thread_.reset();
     }
   }
 
 private:
-  std::unique_ptr<Routine> routine_;
+  std::mutex mx_;
+  Routine::Cycle cycle_;
   ExceptionHandler handler_;
+  std::unique_ptr<Routine> routine_;
   std::unique_ptr<std::thread> routine_thread_;
 };
 } // namespace Stoppable

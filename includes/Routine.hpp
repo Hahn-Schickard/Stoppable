@@ -12,26 +12,30 @@ namespace Stoppable {
  *
  */
 struct Routine {
-  using Iteration = std::function<void()>;
+  using Cycle = std::function<void()>;
 
-  explicit Routine(const Iteration& iteration)
-      : exit_future_(exit_signal_.get_future()), iteration_(iteration) {}
+  explicit Routine(const Cycle& cycle)
+      : exit_future_(exit_signal_.get_future()), cycle_(cycle) {}
 
-  Routine(Routine&& instance)
-      : exit_signal_(std::move(instance.exit_signal_)),
-        exit_future_(std::move(instance.exit_future_)) {}
+  Routine(const Routine&) = delete;
 
-  Routine& operator=(Routine&& instance) {
-    exit_signal_ = std::move(instance.exit_signal_);
-    exit_future_ = std::move(instance.exit_future_);
+  Routine(Routine&& other)
+      : exit_signal_(std::move(other.exit_signal_)),
+        exit_future_(std::move(other.exit_future_)) {}
+
+  Routine& operator=(const Routine&) = delete;
+
+  Routine& operator=(Routine&& other) {
+    exit_signal_ = std::move(other.exit_signal_);
+    exit_future_ = std::move(other.exit_future_);
     return *this;
   }
 
-  virtual ~Routine() = default;
+  virtual ~Routine() { exit_signal_.set_value(); }
 
-  void start() {
+  void run() {
     do {
-      iteration_();
+      cycle_();
     } while (!stopRequested());
   }
 
@@ -40,12 +44,10 @@ struct Routine {
     return !(exit_future_.wait_for(0ms) == std::future_status::timeout);
   }
 
-  void stop() { exit_signal_.set_value(); }
-
 private:
   std::promise<void> exit_signal_;
   std::future<void> exit_future_;
-  Iteration iteration_;
+  Cycle cycle_;
 };
 
 using RoutinePtr = std::shared_ptr<Routine>;
