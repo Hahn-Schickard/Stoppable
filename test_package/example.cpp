@@ -9,19 +9,12 @@ using namespace std;
 
 int main() {
   {
-    auto task = make_unique<Stoppable::Task>(
-        [](const exception_ptr& ex_ptr) {
-          try {
-            if (ex_ptr) {
-              rethrow_exception(ex_ptr);
-            }
-          } catch (const exception& e) {
-            cout << e.what() << endl;
-          }
-        },
-        []() { throw runtime_error("Test throwing"); });
-    task->start();
+    auto task = Stoppable::Task(
+        Stoppable::Routine([]() { this_thread::sleep_for(1ms); }),
+        [](const std::exception_ptr&) {});
+    task.start();
     this_thread::sleep_for(10ms);
+    task.stop();
   }
 
   cout << "Integration test successful" << endl;

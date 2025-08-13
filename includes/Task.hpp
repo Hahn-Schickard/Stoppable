@@ -1,7 +1,7 @@
-#ifndef __MULTITHREADING_STOPABLE_TASK_HPP
-#define __MULTITHREADING_STOPABLE_TASK_HPP
+#ifndef __MULTITHREADING_STOPABLE_routine_HPP
+#define __MULTITHREADING_STOPABLE_routine_HPP
 
-#include "Stoppable.hpp"
+#include "Routine.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -12,51 +12,51 @@ namespace Stoppable {
  * @brief Defines a Stoppable task which is run in a separate thread
  *
  */
+
 struct Task {
   using ExceptionHandler = std::function<void(const std::exception_ptr&)>;
 
-  Task(const ExceptionHandler& handler, Stoppable::Iteration&& iteration)
-      : exception_handler_(handler),
-        task_(std::make_unique<Stoppable>(std::move(iteration))) {}
+  Task(Routine&& routine, const ExceptionHandler& handler)
+      : routine_(std::make_unique<Routine>(std::move(routine))),
+        handler_(handler) {}
+
+  Task(const Routine::Iteration& iteration, const ExceptionHandler& handler)
+      : routine_(std::make_unique<Routine>(iteration)), handler_(handler) {}
 
   virtual ~Task() {
     try {
       stop();
     } catch (...) {
-      exception_handler_(std::current_exception());
+      handler_(std::current_exception());
     }
   }
 
-  bool start() {
-    if (!task_thread_) {
-      task_thread_ = std::make_unique<std::thread>([this]() {
+  void start() {
+    if (!routine_thread_) {
+      routine_thread_ = std::make_unique<std::thread>([this]() {
         try {
-          task_->start();
+          routine_->start();
         } catch (...) {
-          exception_handler_(std::current_exception());
+          handler_(std::current_exception());
         }
       });
-      return task_thread_->joinable();
     }
-    return false;
   }
 
-  bool stop() {
-    if (task_thread_) {
-      if (task_thread_->joinable()) {
-        task_->stop();
-        task_thread_->join();
-        return !task_thread_->joinable();
+  void stop() {
+    if (routine_thread_) {
+      if (routine_thread_->joinable()) {
+        routine_->stop();
+        routine_thread_->join();
       }
     }
-    return false;
   }
 
 private:
-  ExceptionHandler exception_handler_;
-  std::unique_ptr<Stoppable> task_;
-  std::unique_ptr<std::thread> task_thread_;
+  std::unique_ptr<Routine> routine_;
+  ExceptionHandler handler_;
+  std::unique_ptr<std::thread> routine_thread_;
 };
 } // namespace Stoppable
 
-#endif //__MULTITHREADING_STOPABLE_TASK_HPP
+#endif //__MULTITHREADING_STOPABLE_routine_HPP
