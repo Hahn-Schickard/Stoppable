@@ -3,7 +3,6 @@
 
 #include "Routine.hpp"
 
-#include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
@@ -22,7 +21,6 @@ struct Task {
 
   Task(const Task&) = delete;
   Task(Task&& other) = delete;
-
   Task& operator=(const Task&) = delete;
   Task& operator=(Task&& other) = delete;
 
@@ -32,6 +30,7 @@ struct Task {
     if (!routine_thread_) {
       std::unique_lock guard(mx_);
       routine_ = std::make_unique<Routine>(cycle_);
+      auto is_running = routine_->running();
       routine_thread_ = std::make_unique<std::thread>([this]() {
         try {
           routine_->run();
@@ -39,8 +38,7 @@ struct Task {
           handler_(std::current_exception());
         }
       });
-      using namespace std::chrono;
-      std::this_thread::sleep_for(1ms);
+      is_running.wait();
     }
   }
 
@@ -67,6 +65,8 @@ private:
   std::unique_ptr<Routine> routine_;
   std::unique_ptr<std::thread> routine_thread_;
 };
+
+using TaskPtr = std::unique_ptr<Task>;
 } // namespace Stoppable
 
 #endif //__MULTITHREADING_STOPABLE_routine_HPP

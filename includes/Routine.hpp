@@ -1,6 +1,7 @@
 #ifndef __MULTITHREADING_STOPABLE_HPP
 #define __MULTITHREADING_STOPABLE_HPP
 
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -15,41 +16,37 @@ struct Routine {
   using Cycle = std::function<void()>;
 
   explicit Routine(const Cycle& cycle)
-      : exit_future_(exit_signal_.get_future()), cycle_(cycle) {}
+      : exited_(exit_.get_future()), cycle_(cycle) {}
 
   Routine(const Routine&) = delete;
 
-  Routine(Routine&& other)
-      : exit_signal_(std::move(other.exit_signal_)),
-        exit_future_(std::move(other.exit_future_)) {}
-
+  Routine(Routine&& other) = delete;
   Routine& operator=(const Routine&) = delete;
+  Routine& operator=(Routine&& other) = delete;
 
-  Routine& operator=(Routine&& other) {
-    exit_signal_ = std::move(other.exit_signal_);
-    exit_future_ = std::move(other.exit_future_);
-    return *this;
-  }
-
-  virtual ~Routine() { exit_signal_.set_value(); }
+  virtual ~Routine() { exit_.set_value(); }
 
   void run() {
+    running_.set_value();
     do {
       cycle_();
     } while (!stopRequested());
   }
 
+  std::future<void> running() { return running_.get_future(); }
+
   bool stopRequested() const {
     using namespace std::chrono;
-    return !(exit_future_.wait_for(0ms) == std::future_status::timeout);
+    return !(exited_.wait_for(0ms) == std::future_status::timeout);
   }
 
 private:
-  std::promise<void> exit_signal_;
-  std::future<void> exit_future_;
+  std::promise<void> running_;
+  std::promise<void> exit_;
+  std::future<void> exited_;
   Cycle cycle_;
 };
 
-using RoutinePtr = std::shared_ptr<Routine>;
+using RoutinePtr = std::unique_ptr<Routine>;
 } // namespace Stoppable
 #endif //__MULTITHREADING_STOPABLE_HPP
