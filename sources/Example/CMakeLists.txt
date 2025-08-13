@@ -1,23 +1,21 @@
-cmake_minimum_required(VERSION 3.6)
-
-#@+ ======================== User MODULE NAME configuration ============================
+#@+ ======================== User TARGET NAME configuration ============================
 set(THIS Example)
 #@- =========================== END OF USER CONFIGURATION ===============================
-
-set(MODULE ${PROJECT_NAME}_${THIS})
+set(TARGET ${PROJECT_NAME}_${THIS})
 
 file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 
-add_executable(${MODULE})
+add_executable(${TARGET})
 
-target_sources(${MODULE} PRIVATE
-                       ${sources_list}
+target_sources(${TARGET} 
+    PRIVATE
+        ${sources_list}
 )
-
 #@+ ======================== User DEPENDENCIES configuration ============================
-target_link_libraries(${MODULE} PRIVATE 
-                      ${PROJECT_NAME}
+target_link_libraries(${TARGET}
+    PRIVATE
+        ${PROJECT_NAME}
 )
 #@- =========================== END OF USER CONFIGURATION ===============================
-
-IMPORT_TARGET_DLLS(${MODULE})
+target_compile_features(${TARGET} PUBLIC cxx_std_17)
+IMPORT_TARGET_DLLS(${TARGET})

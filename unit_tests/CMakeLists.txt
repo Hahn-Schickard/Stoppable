@@ -1,35 +1,43 @@
-cmake_minimum_required(VERSION 3.6)
-
+#@+ =================== User TEST SUIT TARGET NAME configuration ========================
 set(THIS Unit_Tests_Runner)
+#@- =========================== END OF USER CONFIGURATION ===============================
 
-file(GLOB StoppableTestsSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
-
-#@+ ====================== User TEST_SUITES configuration ==========================
+#@+ ======================== User TEST_SUITES configuration =============================
+file(GLOB TestSuite "${CMAKE_CURRENT_LIST_DIR}/StoppableTestsSuite/*")
 list(APPEND TEST_SUITES
-            ${TestSuite}
+    ${TestSuite}
 )
-#@- ========================= END OF USER CONFIGURATION ============================
-
+#@- =========================== END OF USER CONFIGURATION ===============================
 add_executable(${THIS})
-target_sources(${THIS} PRIVATE
-                       "testRunner.cpp"
-                       ${TEST_SUITES}
-)
 
-#@+ ==================== User TEST_DEPENDCIES configuration =======================
-list(APPEND TEST_DEPENDCIES
-            ${PROJECT_NAME}
+target_sources(${THIS}
+    PRIVATE
+        "testRunner.cpp"
+        ${TEST_SUITES}
 )
-#@- ========================= END OF USER CONFIGURATION ===========================
+#@+ ======================= User TEST_DECENCIES configuration ===========================
+list(APPEND TEST_DECENCIES
+    ${PROJECT_NAME}
+)
+#@- =========================== END OF USER CONFIGURATION ===============================
 
-target_link_libraries(${THIS} PUBLIC
-                              ${TEST_DEPENDCIES}
-                              GTest::gtest
+target_link_libraries(${THIS}
+    PRIVATE
+        GTest::gtest
+        GTest::gmock
+        ${TEST_DECENCIES}
 )
 
 add_test(
     NAME ${THIS}
     COMMAND ${THIS}
 )
+
+set_target_properties(${THIS}
+    PROPERTIES
+        CXX_STANDARD 17
+)
+
+PRINT_TARGET_PROPERTIES(${THIS})
 
 IMPORT_TARGET_DLLS(${THIS})

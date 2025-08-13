@@ -2,6 +2,11 @@ message(STATUS "Using ${CMAKE_CXX_COMPILER_ID} compiler")
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+if (WIN32)
+    # Not the best idea to export all the symbols, but it does greatly simplify Windows/Unix portability
+   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif (WIN32)
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         # Enable branch protection against ROP and JOP attacks on AArch64
@@ -47,6 +52,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         -Werror=format-security
     )
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "17.0")
+            message(FATAL_ERROR "Minimum supported Clang Version is 17.0")
+        endif()
+
         message(STATUS "Setting Clang specific compiler flags")
 
         # compiler hardening
@@ -56,6 +65,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         # Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows.
         add_compile_options(-D_FORTIFY_SOURCE=3)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "9.4.0")
+            message(FATAL_ERROR "Minimum supported GCC Version is 9.4.0")
+        endif()
+
         message(STATUS "Setting GNU specific compiler flags")
 
         # compiler hardening
@@ -74,8 +87,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
                 # Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows.
                 add_compile_options(-D_FORTIFY_SOURCE=3)
             endif()
-            # Perform trivial auto variable initialization
-            # add_compile_options(-ftrivial-auto-var-init=zero)
         elseif (CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo|MinSizeRel")
             # Fortify sources with compile- and run-time checks for unsafe libc usage and buffer overflows.
             add_compile_options(-D_FORTIFY_SOURCE=2)
@@ -93,7 +104,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
             add_link_options(-Wl,--disable-new-dtags -pie -Wl,-z,relro -Wl,-z,now)
 
             if (COVERAGE_TRACKING)
-                add_compile_options(-fprofile-arcs -ftest-coverage)
+                add_compile_options(--coverage)
                 add_link_options(--coverage)
                 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
@@ -104,5 +115,40 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         endif()
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # setup your MSVC toolchain here
+    message(STATUS "Setting MSVC specific compiler flags")
+
+    # Enable warnings (equivalent to -Wall -Wextra)
+    add_compile_options(/W4)
+
+    # Enable buffer security checks (/GS is on by default in MSVC)
+    add_compile_options(/GS)
+
+    # Enable Control Flow Guard (CFG)
+    add_compile_options(/guard:cf)
+
+    # Enable runtime stack buffer overrun checks
+    add_compile_options(/RTC1)
+
+    if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "X86")
+        # Enable safe exception handling
+        add_link_options(/SAFESEH)
+    endif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "X86")
+
+    # Enable DEP/NX compatibility
+    add_link_options(/NXCOMPAT)
+
+    # Enable ASLR
+    add_link_options(/DYNAMICBASE)
+
+    # Enable strict type checking (somewhat similar to -fno-strict-aliasing)
+    add_compile_options(/permissive-)
+
+    # Enable C++ standard checks (optional)
+    add_compile_options(/Zc:__cplusplus /Zc:strictStrings /Zc:inline)
+
+    # If runtime checks are enabled
+    if(ENABLE_RUNTIME_CHECKS)
+        add_compile_options(/RTC1) # Enables stack frame checks, uninitialized variable checks
+    endif()
+
 endif()

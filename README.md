@@ -1,23 +1,11 @@
-<img src="docs/images/vendor-logo.png" alt="" width="200"/>
-
-# PROJECT_NAME
+# Stoppable
 
 ## Description
 A header only implementation of a utility classes that help develop multi-threaded code, requires std::thread library and C++11 support.
 
-### Contains:
- * `Stoppable` - A class that provides functionality to start and stop a given routine
- * `Task` - A class that manages `Stoppable` in a separate thread
-
 ## Documentation
 
-This project uses [Doxygen](https://github.com/doxygen/doxygen) to create the documentation from comments in the header as well as markdown files in `docs/manual` directory. This project also uses a modified [Doxygen Awesome CSS](https://git.hahn-schickard.de/hahn-schickard/software-sollutions/application-engineering/internal/devops/doxygen-awesome-css) style. Please initialize the git submodules to use this Doxygen style to have the documentation generated as intended. 
-
-```bash
-git submodule update --init --recursive
-```
-
-If you want to have the latest documentation with your changes locally, you can generate it with by running the following command from project root:
+If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following:
 
 ```bash
 doxygen Doxyfile
@@ -31,13 +19,13 @@ This will generate html like documentation at `[PROJECT_ROOT]/docs/html`. To use
 * compiler with C++17 support
 * cmake 3.24.0 >= - build system generator, used by package generator as well
 * python3 - used by utilities and package generator
-* conan 2.4.0 >= - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation 
+* conan 2.4.0 >= - dependency handler/package generator
 
 ### Optional
 
 * ninja - build system (alternative to `make`)
-* clang-format >=19.1.4 - to use formatting tools
-* clang-tidy >=19.1.4 - to use static code analysis
+* clang-format >=15.0.7 - to use formatting tools
+* clang-tidy >=15.0.7 - to use static code analysis
 * lcov - to generate code coverage reports
 * valgrind - to run memory analysis
 * doxygen 1.9.8 >= - to generate documentation from code
@@ -55,6 +43,7 @@ This will generate html like documentation at `[PROJECT_ROOT]/docs/html`. To use
 * [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - provides english text spellchecker functionality
 
 ## CMake Variant Integration
+
 A CMake variant file is provided with this repository for easy cmake configuration setup. This functionality requires CMake Tools plugin to be installed. After Visual Code has been started Open Control Panel with Cntrl + Shift + P and type in CMake: Select Variant to start configuring your cmake project configuration.
 
 ## Building the project
@@ -93,13 +82,14 @@ ctest --verbose
 
 ## Creating local conan package
 
-To create a custom local package first define `VERSION`, `USER` and `CHANEL` environmental variables. These variables will tell conan how to name the package. 
+To create a custom local package first define `VERSION`, `USER` and `CHANEL` environmental variables. These variables will tell conan how to name the package.
 
 - `VERSION` variable specifies package version number in the following format `${MAJOR}.${MINOR}.${PATCH}`. For more information see [Release versioning schema](CONTRIBUTING.md#release-versioning-schema)
-- `USER` variable specifies the name of release community (for example `hahn-schickard`, `bincrafters`, etc.), it is used to showcase that this package is outside of [conan-center-index](https://conan.io/center/) repository 
-- `CHANEL` variable specifies the package type, i.e. if it is a stable, development or nightly release
+- `USER` variable specifies the name of release community (for example `hahn-schickard`, `bincrafters`, etc.), it is used to showcase that this package is outside of [conan-center-index](https://conan.io/center/) repository
+- `CHANEL` variable specifies the package type, i.e. if it is a stable, development or nightly release, defaults to empty
 
 ### Conan v1
+
 To create local conan packages run the following command in project root directory:
 
 ```bash
@@ -114,8 +104,10 @@ To create local conan packages run the following command in project root directo
 conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing
 ```
 
-In case you need to specify C++ standard, run the following command in project root directory: 
+In case you need to change default recipe options
 
 ```bash
-conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
+conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing -o ${OPTION_PAIR}
 ```
+
+Where `${OPTION_PAIR}` is `option_name=value`. To add multiple options, continue to add `-o ${OPTION_PAIR}` as required.
