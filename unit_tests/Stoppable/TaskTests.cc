@@ -1,59 +1,44 @@
+#include "ExceptionPointee.hpp"
 #include "Task.hpp"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <string>
 
 namespace Stoppable::tests {
 using namespace std;
 using namespace ::testing;
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-MATCHER_P(ExceptionPointee, exception_type, "") {
-  try {
-    rethrow_exception(arg);
-    return false;
-  } catch (const exception& ex) {
-    return typeid(ex) == typeid(exception_type);
-  }
-}
-
 class TaskTests : public Test {
 protected:
-  TaskTests()
-      : task_(make_unique<Task>(
-            mock_cycle_.AsStdFunction(), mock_handler_.AsStdFunction())) {}
+  void testCanStartAndStop() {
+    EXPECT_FALSE(task_->running());
+
+    EXPECT_NO_THROW(task_->start());
+    EXPECT_TRUE(task_->running());
+
+    EXPECT_NO_THROW(task_->stop());
+    EXPECT_FALSE(task_->running());
+  }
 
   MockFunction<void()> mock_cycle_;
   MockFunction<void(const std::exception_ptr&)> mock_handler_;
-  unique_ptr<Task> task_;
+  TaskPtr task_ = make_shared<Task>(
+      mock_cycle_.AsStdFunction(), mock_handler_.AsStdFunction());
 };
 
-TEST_F(TaskTests, canStartStop) {
+TEST_F(TaskTests, canStartAndStop) {
   EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
   EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
 
-  EXPECT_FALSE(task_->running());
-  EXPECT_NO_THROW(task_->start());
-  EXPECT_TRUE(task_->running());
-  EXPECT_NO_THROW(task_->stop());
-  EXPECT_FALSE(task_->running());
+  EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
 }
 
 TEST_F(TaskTests, canRestart) {
   EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
   EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(2));
 
-  EXPECT_FALSE(task_->running());
-  EXPECT_NO_THROW(task_->start());
-  EXPECT_TRUE(task_->running());
-  EXPECT_NO_THROW(task_->stop());
-  EXPECT_FALSE(task_->running());
-  EXPECT_FALSE(task_->running());
-  EXPECT_NO_THROW(task_->start());
-  EXPECT_TRUE(task_->running());
-  EXPECT_NO_THROW(task_->stop());
-  EXPECT_FALSE(task_->running());
+  EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
+  // restart task
+  EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
 }
 
 TEST_F(TaskTests, canHandleException) {
@@ -65,10 +50,7 @@ TEST_F(TaskTests, canHandleException) {
       .Times(AtLeast(1))
       .WillOnce(Throw(target_exception));
 
-  EXPECT_FALSE(task_->running());
-  EXPECT_NO_THROW(task_->start());
-  EXPECT_TRUE(task_->running());
-  EXPECT_NO_THROW(task_->stop());
+  EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
 }
 
 } // namespace Stoppable::tests
