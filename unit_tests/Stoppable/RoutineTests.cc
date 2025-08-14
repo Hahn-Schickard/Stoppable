@@ -63,7 +63,14 @@ TEST_F(RoutineTests, canThrowAndRun) {
   EXPECT_CALL(mock_cycle_, Call())
       .Times(AtLeast(2))
       .WillOnce(Throw(target_exception))
-      .WillOnce([&mock_cycle_call]() { mock_cycle_call.set_value(); });
+      .WillOnce([&mock_cycle_call]() { mock_cycle_call.set_value(); })
+      .WillRepeatedly([]() {
+        // default action for valgrind, not normally used in the test
+        // valgrind causes test execution to take longer, thus causing more
+        // cycle calls. If no default action is given, gtest will return
+        // directly, but this causes significant slow down in valgrind execution
+        this_thread::sleep_for(100ms);
+      });
 
   auto mock_cycle_called = mock_cycle_call.get_future();
 

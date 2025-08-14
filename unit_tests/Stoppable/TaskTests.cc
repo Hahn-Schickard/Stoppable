@@ -2,6 +2,7 @@
 #include "Task.hpp"
 
 #include <string>
+#include <thread>
 
 namespace Stoppable::tests {
 using namespace std;
@@ -48,7 +49,12 @@ TEST_F(TaskTests, canHandleException) {
       .Times(Exactly(1));
   EXPECT_CALL(mock_cycle_, Call())
       .Times(AtLeast(1))
-      .WillOnce(Throw(target_exception));
+      .WillOnce(Throw(target_exception))
+      .WillRepeatedly([]() {
+        // default action for valgrind, not normally used in the test
+        // @see RoutineTests.canThrowAndRun test case for explanation
+        this_thread::sleep_for(100ms);
+      });
 
   EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
 }
