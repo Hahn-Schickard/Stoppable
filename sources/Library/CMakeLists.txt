@@ -15,6 +15,11 @@ target_sources(${TARGET}
     PRIVATE
         ${SOURCEFILES}
 )
+
+target_link_libraries(${TARGET} 
+    PUBLIC
+        Threads::Threads                                 
+)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
 target_compile_features(${TARGET} INTERFACE cxx_std_17)
