@@ -22,6 +22,8 @@ private:
 
 using StopTokenPtr = std::shared_ptr<StopToken>;
 
+StopTokenPtr makeStopToken();
+
 struct Routine {
   using Cycle = std::function<void()>;
   using ExceptionHandler = std::function<void(const std::exception_ptr&)>;
