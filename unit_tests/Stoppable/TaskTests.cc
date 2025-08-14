@@ -10,11 +10,15 @@ using namespace ::testing;
 
 class TaskTests : public Test {
 protected:
-  void testCanStartAndStop() {
+  void testCanStart() {
     EXPECT_FALSE(task_->running());
 
     EXPECT_NO_THROW(task_->start());
     EXPECT_TRUE(task_->running());
+  }
+
+  void testCanStartAndStop() {
+    EXPECT_NO_FATAL_FAILURE(testCanStart());
 
     EXPECT_NO_THROW(task_->stop());
     EXPECT_FALSE(task_->running());
@@ -31,6 +35,34 @@ TEST_F(TaskTests, canStartAndStop) {
   EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
 
   EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
+}
+
+TEST_F(TaskTests, canStartAndStopOnDestruction) {
+  EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
+  EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
+
+  EXPECT_NO_FATAL_FAILURE(testCanStart());
+  task_.reset();
+}
+
+TEST_F(TaskTests, canStartTwice) {
+  EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
+  EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
+
+  EXPECT_NO_FATAL_FAILURE(testCanStart());
+  EXPECT_NO_THROW(task_->start());
+  EXPECT_TRUE(task_->running());
+  EXPECT_NO_THROW(task_->stop());
+  EXPECT_FALSE(task_->running());
+}
+
+TEST_F(TaskTests, canStopTwice) {
+  EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
+  EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
+
+  EXPECT_NO_FATAL_FAILURE(testCanStartAndStop());
+  EXPECT_NO_THROW(task_->stop());
+  EXPECT_FALSE(task_->running());
 }
 
 TEST_F(TaskTests, canRestart) {

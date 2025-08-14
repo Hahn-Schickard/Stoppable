@@ -44,6 +44,23 @@ TEST_F(RoutineTests, canRunAndStop) {
   EXPECT_NO_FATAL_FAILURE(testCanRunAndStop());
 }
 
+TEST_F(RoutineTests, canRunAndStopWithoutFuture) {
+  EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
+  EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(1));
+
+  auto test_thread = thread([routine_ptr = weak_ptr(routine_)]() {
+    if (auto routine = routine_ptr.lock()) {
+      routine->run();
+    }
+  });
+  this_thread::sleep_for(100ms);
+
+  EXPECT_FALSE(token_->stopping());
+  token_->stop();
+  EXPECT_TRUE(token_->stopping());
+  test_thread.join();
+}
+
 TEST_F(RoutineTests, canRestart) {
   EXPECT_CALL(mock_handler_, Call(_)).Times(Exactly(0));
   EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(2));
