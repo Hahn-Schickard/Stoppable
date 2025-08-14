@@ -1,10 +1,7 @@
-#ifndef __MULTITHREADING_STOPABLE_routine_HPP
-#define __MULTITHREADING_STOPABLE_routine_HPP
+#ifndef __STOPPABLE_TASK_0C4D_HPP
+#define __STOPPABLE_TASK_0C4D_HPP
 
 #include "Routine.hpp"
-
-#include <mutex>
-#include <stdexcept>
 
 namespace Stoppable {
 /**
@@ -14,7 +11,7 @@ namespace Stoppable {
 
 struct Task {
   Task(const Routine::Cycle& cycle, const Routine::ExceptionHandler& handler)
-      : cycle_(cycle), handler_(handler) {}
+      : routine_(std::make_shared<Routine>(token_, cycle, handler)) {}
 
   Task(const Task&) = delete;
   Task(Task&& other) = delete;
@@ -26,7 +23,7 @@ struct Task {
   void start() noexcept {
     if (!running()) {
       std::unique_lock guard(mx_);
-      routine_ = std::make_shared<Routine>(cycle_, handler_);
+      token_->reset();
       auto is_running = routine_->running();
       routine_finished_ = std::async(
           std::launch::async, [routine_ptr = std::weak_ptr(routine_)]() {
@@ -40,8 +37,7 @@ struct Task {
 
   bool running() noexcept {
     try {
-      using namespace std::chrono;
-      std::unique_lock guard(mx_);
+      using namespace std::chrono_literals;
       return routine_finished_.wait_for(10ms) == std::future_status::timeout;
     } catch (const std::future_error&) {
       return false; // no future, thus not running
@@ -51,16 +47,14 @@ struct Task {
   void stop() noexcept {
     if (running()) {
       std::unique_lock guard(mx_);
-      routine_->stop();
+      token_->stop();
       routine_finished_.wait();
-      routine_.reset();
     }
   }
 
 private:
   std::mutex mx_;
-  Routine::Cycle cycle_;
-  Routine::ExceptionHandler handler_;
+  StopTokenPtr token_ = std::make_shared<StopToken>();
   std::shared_ptr<Routine> routine_;
   std::future<void> routine_finished_;
 };
@@ -68,4 +62,4 @@ private:
 using TaskPtr = std::unique_ptr<Task>;
 } // namespace Stoppable
 
-#endif //__MULTITHREADING_STOPABLE_routine_HPP
+#endif //__STOPPABLE_TASK_0C4D_HPP
