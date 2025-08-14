@@ -28,7 +28,7 @@ private:
   std::future<void> routine_finished_;
 };
 
-using TaskPtr = std::unique_ptr<Task>;
+using TaskPtr = std::shared_ptr<Task>;
 } // namespace Stoppable
 
 #endif //__STOPPABLE_TASK_0C4D_HPP

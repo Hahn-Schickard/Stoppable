@@ -47,6 +47,6 @@ private:
   ExceptionHandler handler_;
 };
 
-using RoutinePtr = std::unique_ptr<Routine>;
+using RoutinePtr = std::shared_ptr<Routine>;
 } // namespace Stoppable
 #endif //__STOPPABLE_ROUTINE_FD0C_HPP
