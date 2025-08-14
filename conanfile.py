@@ -12,8 +12,10 @@ class PackageConan(ConanFile):
     description = "A header only implementation of a utility classes that help develop multi-threaded code"
     topics = ("pattern", "stoppable", "multi-threading", "cpp17")
     settings = "os", "compiler", "build_type", "arch"
-    options = {}
-    default_options = {}
+    options = {"shared": [True, False],
+               "fPIC": [True, False]}
+    default_options = {"shared": True,
+                       "fPIC": True}
     default_user = "Hahn-Schickard"
     # @- END USER META CONFIG
     exports = [
@@ -30,7 +32,7 @@ class PackageConan(ConanFile):
         # @- END USER EXPORTS
     ]
     generators = "CMakeDeps"
-    package_type = "header-library"
+    package_type = "library"
     short_paths = True
 
     @property
@@ -57,8 +59,6 @@ class PackageConan(ConanFile):
 
     def build_requirements(self):
         self.test_requires("gtest/[~1.16]")
-        # @+ START USER BUILD REQUIREMENTS
-        # @- END USER BUILD REQUIREMENTS
 
     def configure(self):
         # @+ START USER REQUIREMENTS OPTION CONFIGURATION
@@ -67,6 +67,10 @@ class PackageConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+
+    def config_options(self):
+        if self.settings.os == 'Windows':
+            del self.options.fPIC
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -99,6 +103,3 @@ class PackageConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", self.full_name)
         cmake_target_name = self.full_name + "::" + self.full_name
         self.cpp_info.set_property("cmake_target_name", cmake_target_name)
-
-    def package_id(self):
-        self.info.clear()

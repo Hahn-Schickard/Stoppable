@@ -2,23 +2,19 @@
 #define __STOPPABLE_ROUTINE_FD0C_HPP
 
 #include <atomic>
-#include <chrono>
-#include <condition_variable>
-#include <cstdint>
 #include <functional>
 #include <future>
 #include <memory>
-#include <shared_mutex>
 #include <stdexcept>
 
 namespace Stoppable {
 struct StopToken {
 
-  void reset() { flag_ = false; }
+  void reset() noexcept;
 
-  void stop() { flag_ = true; }
+  void stop() noexcept;
 
-  bool stopping() { return flag_; }
+  bool stopping() const noexcept;
 
 private:
   std::atomic<bool> flag_ = false;
@@ -31,29 +27,18 @@ struct Routine {
   using ExceptionHandler = std::function<void(const std::exception_ptr&)>;
 
   Routine(const StopTokenPtr& stop_token, const Cycle& cycle,
-      const ExceptionHandler& handler)
-      : stop_token_(stop_token), cycle_(cycle), handler_(handler) {}
+      const ExceptionHandler& handler);
 
   Routine(const Routine&) = delete;
   Routine(Routine&& other) = delete;
   Routine& operator=(const Routine&) = delete;
   Routine& operator=(Routine&& other) = delete;
 
-  ~Routine() { stop_token_->stop(); }
+  ~Routine();
 
-  void run() noexcept {
-    running_.set_value();
-    do {
-      try {
-        cycle_();
-      } catch (...) {
-        handler_(std::current_exception());
-      }
-    } while (!stop_token_->stopping());
-    running_ = {}; // reset promise for a re-run
-  }
+  void run() noexcept;
 
-  std::future<void> running() noexcept { return running_.get_future(); }
+  std::future<void> running() noexcept;
 
 private:
   std::promise<void> running_;
