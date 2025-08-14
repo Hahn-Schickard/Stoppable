@@ -8,12 +8,14 @@
 using namespace std;
 
 int main() {
+  auto cycle = []() { this_thread::sleep_for(1ms); };
+  auto handler = [](const exception_ptr&) {};
   {
-    auto task = Stoppable::Task([]() { this_thread::sleep_for(1ms); },
-        [](const std::exception_ptr&) {});
-    task.start();
-    this_thread::sleep_for(10ms);
-    task.stop();
+    auto token = Stoppable::makeStopToken();
+    auto routine = Stoppable::Routine(token, cycle, handler);
+  }
+  {
+    auto task = Stoppable::Task(cycle, handler);
   }
 
   cout << "Integration test successful" << endl;
