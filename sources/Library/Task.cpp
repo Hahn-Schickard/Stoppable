@@ -37,7 +37,6 @@ void Task::stop() noexcept {
   if (running()) {
     std::unique_lock guard(mx_);
     token_->stop();
-    routine_finished_.wait();
     try {
       routine_finished_.get();
     } catch (...) {
