@@ -23,6 +23,7 @@ struct Task {
 private:
   std::mutex mx_;
   StopTokenPtr token_ = std::make_shared<StopToken>();
+  Routine::ExceptionHandler handler_;
   std::shared_ptr<Routine> routine_;
   std::future<void> routine_finished_;
 };

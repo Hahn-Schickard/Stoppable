@@ -4,7 +4,8 @@ namespace Stoppable {
 
 Task::Task(
     const Routine::Cycle& cycle, const Routine::ExceptionHandler& handler)
-    : routine_(std::make_shared<Routine>(token_, cycle, handler)) {}
+    : handler_(handler),
+      routine_(std::make_shared<Routine>(token_, cycle, handler_)) {}
 
 Task::~Task() { stop(); }
 
@@ -37,6 +38,11 @@ void Task::stop() noexcept {
     std::unique_lock guard(mx_);
     token_->stop();
     routine_finished_.wait();
+    try {
+      routine_finished_.get();
+    } catch (...) {
+      handler_(std::current_exception());
+    }
   }
 }
 } // namespace Stoppable
