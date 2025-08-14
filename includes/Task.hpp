@@ -21,15 +21,19 @@ struct Task {
   Task& operator=(const Task&) = delete;
   Task& operator=(Task&& other) = delete;
 
-  virtual ~Task() { stop(); }
+  ~Task() { stop(); }
 
   void start() noexcept {
     if (!running()) {
       std::unique_lock guard(mx_);
-      routine_ = std::make_unique<Routine>(cycle_, handler_);
+      routine_ = std::make_shared<Routine>(cycle_, handler_);
       auto is_running = routine_->running();
-      routine_finished_ =
-          std::async(std::launch::async, [this]() { routine_->run(); });
+      routine_finished_ = std::async(
+          std::launch::async, [routine_ptr = std::weak_ptr(routine_)]() {
+            if (auto routine = routine_ptr.lock()) {
+              routine->run();
+            }
+          });
       is_running.wait();
     }
   }
@@ -48,8 +52,8 @@ struct Task {
     if (running()) {
       std::unique_lock guard(mx_);
       routine_->stop();
-      routine_.reset();
       routine_finished_.wait();
+      routine_.reset();
     }
   }
 
@@ -57,7 +61,7 @@ private:
   std::mutex mx_;
   Routine::Cycle cycle_;
   Routine::ExceptionHandler handler_;
-  std::unique_ptr<Routine> routine_;
+  std::shared_ptr<Routine> routine_;
   std::future<void> routine_finished_;
 };
 
