@@ -50,7 +50,7 @@ class PackageConan(ConanFile):
 
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
-            check_min_cppstd(self, "17")
+            check_min_cppstd(self, "11")
 
     def requirements(self):
         # @+ START USER REQUIREMENTS
