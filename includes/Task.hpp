@@ -3,6 +3,9 @@
 
 #include "Routine.hpp"
 
+#include <mutex>
+#include <thread>
+
 namespace Stoppable {
 /**
  * @brief Convenience wrapper for Stoppable::Routine
@@ -52,7 +55,7 @@ private:
   StopTokenPtr token_;
   Routine::ExceptionHandler handler_;
   std::shared_ptr<Routine> routine_;
-  std::future<void> routine_finished_;
+  std::unique_ptr<std::thread> routine_thread_;
 };
 
 using TaskPtr = std::shared_ptr<Task>;

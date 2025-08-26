@@ -15,22 +15,20 @@ void Task::start() noexcept {
     unique_lock guard(mx_);
     token_->reset();
     auto is_running = routine_->running();
-    routine_finished_ =
-        async(launch::async, [routine_ptr = weak_ptr(routine_)]() {
-          if (auto routine = routine_ptr.lock()) {
-            routine->run();
-          }
-        });
+    routine_thread_ = make_unique<thread>([routine_ptr = weak_ptr(routine_)]() {
+      if (auto routine = routine_ptr.lock()) {
+        routine->run();
+      }
+    });
     is_running.wait();
   }
 }
 
 bool Task::running() const noexcept {
-  try {
-    using namespace chrono_literals;
-    return routine_finished_.wait_for(10ms) == future_status::timeout;
-  } catch (const future_error&) {
-    return false; // no future, thus not running
+  if (routine_thread_) {
+    return routine_thread_->joinable();
+  } else {
+    return false;
   }
 }
 
@@ -39,7 +37,7 @@ void Task::stop() noexcept {
     unique_lock guard(mx_);
     token_->stop();
     try {
-      routine_finished_.get();
+      routine_thread_->join();
     } catch (...) {
       handler_(current_exception());
     }
