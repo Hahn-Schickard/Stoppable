@@ -137,7 +137,7 @@ int main() {
     task.start();
     // you can check if the task is running or not
     if (task.running()) {
-      //
+      // since the task was already started, we will stop it here
       task.stop();
     }
     // stopping the task twice does nothing
@@ -156,3 +156,5 @@ int main() {
 ### Sharing access to your tasks
 
 Just like the the Stoppable::Routine, Stoppable::Task does not allow the use of copy or move semantics. This is because it uses `std::mutex` inside to protect against simultaneous Stoppable::Task::start() and Stoppable::Task::stop() calls. Since the [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex.html) is neither copyable nor movable, so is the Stoppable::Task.
+
+If you need to have shared access to the Stoppable::Task, you can create it as as `std::shared_ptr`.
