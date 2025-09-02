@@ -1,4 +1,25 @@
 # Changelog
+## [0.3.0] - 2025.09.02
+### Added 
+ - Installation documentation
+ - `StopToken` class
+
+### Removed 
+ - `JobHandler.hpp`
+
+### Changed
+ - `Stoppable.hpp` into `Routine.hpp`
+ - `Stoppable` class into `Routine` class
+ - `StoppableTask.hpp` into `Task.hpp`
+ - `StoppableTask` class into `Task` class
+ - unit tests
+ - integration test
+ - contribution guide
+ - basic usage documentation
+ - compiler hardening settings
+ - Conan recipe to support c++11 compilers
+ - Conan package type to compiled library
+
 ## [0.2.7] - 2024.08.05
 ### Added
  - windows support
