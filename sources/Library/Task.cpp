@@ -5,7 +5,7 @@ using namespace std;
 
 Task::Task(
     const Routine::Cycle& cycle, const Routine::ExceptionHandler& handler)
-    : token_(makeStopToken()), handler_(handler),
+    : handler_(handler),
       routine_(make_shared<Routine>(token_, cycle, handler_)) {}
 
 Task::~Task() { stop(); }

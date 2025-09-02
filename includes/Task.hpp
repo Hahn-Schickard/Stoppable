@@ -52,7 +52,7 @@ struct Task {
 
 private:
   std::mutex mx_;
-  StopTokenPtr token_;
+  StopTokenPtr token_ = makeStopToken();
   Routine::ExceptionHandler handler_;
   std::shared_ptr<Routine> routine_;
   std::unique_ptr<std::thread> routine_thread_;
