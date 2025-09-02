@@ -20,6 +20,13 @@
  - Conan recipe to support c++11 compilers
  - Conan package type to compiled library
 
+## [0.2.8] - 2025.05.23
+### Added
+  - compiler hardening settings
+  
+### Changed
+ - gtest to v 1.16
+
 ## [0.2.7] - 2024.08.05
 ### Added
  - windows support

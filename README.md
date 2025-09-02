@@ -4,6 +4,14 @@
 
 This project provides a simple and thread-safe way of stopping runnable objects that are being executed in a separate thread or a thread-pool for C++11 projects. It is somewhat akin to the C++20 [`std::stop_token`](https://en.cppreference.com/w/cpp/thread/stop_token.html) functionality.
 
+## Fresh setup
+
+This project uses git submodules, please initialize them when creating a fresh repository clone. To initialize all of the submodule run the following command:
+
+```
+git submodule update --init --recursive
+```
+
 ## Documentation
 
 If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following:
@@ -110,5 +118,8 @@ In case you need to change default recipe options
 ```bash
 conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing -o ${OPTION_PAIR}
 ```
+<<<<<<< HEAD
 
 Where `${OPTION_PAIR}` is `option_name=value`. To add multiple options, continue to add `-o ${OPTION_PAIR}` as required.
+=======
+>>>>>>> 8acb7c2367577a0cdb3cbed369e4d6357326cfbb
