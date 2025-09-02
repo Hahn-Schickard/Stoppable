@@ -3,7 +3,7 @@
     "project_template_version": "0.3.1",
     "project_name_long": "Stoppable",
     "project_name_short": "Stoppable",
-    "project_description": "A header only implementation of a utility classes that help develop multi-threaded code, requires std::thread library and C++11 support.",
+    "project_description": "A C++11 compliant way of starting and stopping tasks in a separate thread or a thread-pool.",
     "license": "Apache v2",
     "gitignore": true,
     "contribution_guide": true,
