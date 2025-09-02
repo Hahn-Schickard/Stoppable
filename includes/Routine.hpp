@@ -17,7 +17,7 @@ struct StopToken {
    * @brief Sets the internal flag to false
    *
    */
-  void reset() noexcept;
+  void clear() noexcept;
 
   /**
    * @brief Sets the internal flag to true
@@ -29,7 +29,7 @@ struct StopToken {
    * @brief Returns the current state of the internal flag
    *
    * @return true if stop() was called
-   * @return false if stop() was never called or if reset() was
+   * @return false if stop() was never called or if clear() was
    */
   bool stopping() const noexcept;
 

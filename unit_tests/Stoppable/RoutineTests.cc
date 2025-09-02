@@ -66,7 +66,7 @@ TEST_F(RoutineTests, canRestart) {
   EXPECT_CALL(mock_cycle_, Call()).Times(AtLeast(2));
 
   EXPECT_NO_FATAL_FAILURE(testCanRunAndStop());
-  token_->reset();
+  token_->clear();
   EXPECT_NO_FATAL_FAILURE(testCanRunAndStop());
 }
 

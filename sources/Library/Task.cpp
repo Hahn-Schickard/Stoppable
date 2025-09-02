@@ -13,7 +13,7 @@ Task::~Task() { stop(); }
 void Task::start() noexcept {
   if (!running()) {
     unique_lock guard(mx_);
-    token_->reset();
+    token_->clear();
     auto is_running = routine_->running();
     routine_thread_ = make_unique<thread>([routine_ptr = weak_ptr(routine_)]() {
       if (auto routine = routine_ptr.lock()) {

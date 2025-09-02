@@ -3,7 +3,7 @@
 namespace Stoppable {
 using namespace std;
 
-void StopToken::reset() noexcept { flag_ = false; }
+void StopToken::clear() noexcept { flag_ = false; }
 
 void StopToken::stop() noexcept { flag_ = true; }
 
