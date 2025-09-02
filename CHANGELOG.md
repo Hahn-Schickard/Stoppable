@@ -1,7 +1,31 @@
 # Changelog
-## [0.2.8] - 2025.05.23
+## [0.3.0] - 2025.09.02
+### Added 
+ - Installation documentation
+ - `StopToken` class
+
+### Removed 
+ - `JobHandler.hpp`
+
 ### Changed
- - gtest to v 2.16
+ - `Stoppable.hpp` into `Routine.hpp`
+ - `Stoppable` class into `Routine` class
+ - `StoppableTask.hpp` into `Task.hpp`
+ - `StoppableTask` class into `Task` class
+ - unit tests
+ - integration test
+ - contribution guide
+ - basic usage documentation
+ - compiler hardening settings
+ - Conan recipe to support c++11 compilers
+ - Conan package type to compiled library
+
+## [0.2.8] - 2025.05.23
+### Added
+  - compiler hardening settings
+  
+### Changed
+ - gtest to v 1.16
 
 ## [0.2.7] - 2024.08.05
 ### Added

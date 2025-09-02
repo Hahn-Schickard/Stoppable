@@ -1,43 +1,37 @@
-cmake_minimum_required(VERSION 3.12) 
-
-#@+ ======================== User MODULE NAME configuration ============================
-set(THIS HeaderOnly)
+#@+ ======================== User TARGET NAME configuration =============================
+set(THIS ThreadPool)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
-set(MODULE ${PROJECT_NAME}_${THIS})
+set(TARGET ${PROJECT_NAME})
 
-list(APPEND THIS_INCLUDES_DIRS
-            ${INCLUDES_DIR}/
+#@+ =========================== User TARGET configuration ===============================
+file(GLOB THIS_INCLUDES ${INCLUDES_DIR}/*.hpp)
+file(GLOB SOURCEFILES "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
+
+add_library(${TARGET})
+target_sources(${TARGET}
+    PUBLIC
+        ${THIS_INCLUDES}
+    PRIVATE
+        ${SOURCEFILES}
 )
 
-file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
-
-INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
-
-add_library(${MODULE} INTERFACE)        
-
-#@+ ======================== User DEPENDENCIES configuration ============================
-target_link_libraries(${MODULE} INTERFACE 
-                      Threads::Threads
+target_link_libraries(${TARGET} 
+    PUBLIC
+        Threads::Threads                                 
 )
 #@- =========================== END OF USER CONFIGURATION ===============================
 
-target_include_directories(${MODULE} INTERFACE
-                           $<BUILD_INTERFACE:${INCLUDES_DIR}>
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+target_compile_features(${TARGET} INTERFACE cxx_std_17)
+
+target_include_directories(${TARGET}
+    PUBLIC
+        $<BUILD_INTERFACE:${INCLUDES_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 )
 
-target_compile_features(${MODULE} INTERFACE cxx_std_17)
+PRINT_TARGET_PROPERTIES(${TARGET})
 
-install(
-    TARGETS ${MODULE}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-install(
-    FILES ${THIS_INCLUDES}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-)
+INSTALL_TARGET(${TARGET})
+INSTALL_HEADERS(HEADERS "${THIS_INCLUDES}")
