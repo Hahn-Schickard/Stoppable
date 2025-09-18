@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.1] - 2025.09.18
+### Changed
+ - gtest to v 1.17
+
 ## [0.3.0] - 2025.09.02
 ### Added 
  - Installation documentation
