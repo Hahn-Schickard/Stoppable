@@ -118,8 +118,6 @@ In case you need to change default recipe options
 ```bash
 conan create . --version=${VERSION} --user=${USER} --channel=${CHANEL} --build=missing -o ${OPTION_PAIR}
 ```
-<<<<<<< HEAD
 
 Where `${OPTION_PAIR}` is `option_name=value`. To add multiple options, continue to add `-o ${OPTION_PAIR}` as required.
-=======
->>>>>>> 8acb7c2367577a0cdb3cbed369e4d6357326cfbb
+
